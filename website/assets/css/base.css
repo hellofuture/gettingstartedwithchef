@@ -43,6 +43,7 @@ body {
   margin: 15px inherit;
   background-color: #000;
   color: #eee;
+  font-size: 0.75em;
 }
 
 .terminal .folder {
