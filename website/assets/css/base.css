@@ -39,6 +39,15 @@ body {
   margin-bottom: 10px;
 }
 
+.terminal {
+  margin: 15px inherit;
+  background-color: #000;
+  color: #eee;
+}
+
+.terminal .folder {
+  color: blue;
+}
 
 
 /* Custom page CSS

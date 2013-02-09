@@ -37,16 +37,55 @@
         <div class="page-header">
           <h1>Getting Started with Chef</h1>
         </div>
-        <p class="lead">Starting with Chef can be difficult. There are a few tricky concepts to grasp and many bits of terminology to learn. This guide gradually introduces you to Chef without throwing you in at the deep end.</p>
+        <p class="lead">Starting with Chef can be difficult. There are a few tricky concepts to grasp and some new terminology to learn. This work in progress book gradually introduces you to Chef without throwing you in at the deep end.</p>
 
-        <p>We'll start with most simple way to use Chef. It's called chef-solo. This allows you to install, configure and manage the packages required by your application. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
+        <p>If you find any issues with this book or have any suggestions of things you'd like to change please submit an issue or pull request over at our <a href="https://github.com/hellofuture/gettingstartedwithchef">Github page</a>.
 
-        <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the guide but for now we'll just need root access to a fresh install of Ubuntu.</p> <p>There are more than few providers of cloud instances but we favour Rackspace, if you sign up here we'll get some affiliate revenue that will help fund our writing of future guides. Once you've signed up, fire up an Ubuntu instance.</p>
+        <h2>Introducing Chef</h2>
 
-        <p>Of course you can install Ubuntu in a virtual machine if preferred. If you do, create a snapshot of your fresh install so we can re-use a fresh installation for later examples.</p>
+        <p>We'll start with the simplest way to use Chef. It's called chef-solo. This allows you to install, configure and manage the packages required by your application. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
+
+        <p>Every time you have to setup a web server you have to remember loads of installation commands, edit configuration files and generally you always forget how to do something and it takes ages. Wouldn't it be nice if this was all entirely automated? With Chef we can keep our infrastructure as code alongside our applications.</p>
+
+        <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of Ubuntu.</p> <p>There are more than few providers of cloud instances but we favour Rackspace, if you sign up here we'll get some affiliate revenue that will help fund our writing of future guides. Once you've signed up, fire up an Ubuntu instance.</p>
+
+        <p>Of course you can install Ubuntu in a virtual machine if preferred. If you do, create a snapshot now so we can re-use a fresh installation for later examples.</p>
 
 
+        <h3>Installing Chef</h3>
 
+        <p>SSH to your vanilla Ubuntu box and run the following command to install Chef. This used to be a more involved process but thanks to the new omnibus installer it couldn't be simpler.</p>
+
+        <pre class="terminal">root@intro:~# sudo true && curl -L https://www.opscode.com/chef/install.sh | sudo bash</pre>
+
+        <p>Confirm Chef has successfully installed:</p>
+
+        <pre class="terminal">root@intro:~# chef-solo -v
+Chef: 11.2.0
+</pre>
+        <p>Of course your version number may be different!</p>
+
+        <p>So, what do we need to do to get our web server up and running?</p>
+
+        <ul>
+          <li>Install and configure Apache</li>
+          <li>Install and configure MySQL</li>
+          <li>Install and configure PHP</li>
+          <li>Deploy our website code to the site</li>
+        </ul>
+
+        <p>How do we do that? We write our first Chef cookbook. But before we do that we should setup a file structure that will help us organise our various Chef files. We call this our Chef Repository.</p>
+
+        <pre class="terminal">root@intro:~# wget http://github.com/opscode/chef-repo/tarball/master
+root@intro:~# tar -zxf master
+root@intro:~# mv opscode-chef-repo* chef-repo</pre>
+      
+        <p>If we look inside the chef-repo directory we can see the following:</p>
+
+        <pre class="terminal">root@intro:~# cd chef-repo/
+root@intro:~/chef-repo# ls
+<span class="folder">certificates</span>  chefignore  <span class="folder">config</span>  <span class="folder">cookbooks</span>  <span class="folder">data_bags</span>  <span class="folder">environments</span>  LICENSE  Rakefile  README.md  <span class="folder">roles</span></pre>
+      
       </div>
 
       <div id="push"></div>
