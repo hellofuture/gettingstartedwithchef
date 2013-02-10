@@ -41,7 +41,7 @@
 
         <p>If you find any issues with this book or have any suggestions of things you'd like to change please submit an issue or pull request over at our <a href="https://github.com/hellofuture/gettingstartedwithchef">Github page</a>.
 
-        <h2>Introducing Chef</h2>
+        <h2>1. Introducing Chef</h2>
 
         <p>We'll start with the simplest way to use Chef. It's called chef-solo. This allows you to install, configure and manage the packages required by your application. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
 
@@ -63,7 +63,7 @@
         <pre class="terminal">root@intro:~# chef-solo -v
 Chef: 11.2.0
 </pre>
-        <p>Of course your version number may be different!</p>
+        <p class="muted">Of course, your version number may be different.</p>
 
         <p>So, what do we need to do to get our web server up and running?</p>
 
@@ -74,7 +74,7 @@ Chef: 11.2.0
           <li>Deploy our website code to the site</li>
         </ul>
 
-        <p>How do we do that? We write our first Chef cookbook. But before we do that we should setup a file structure that will help us organise our various Chef files. We call this our Chef Repository.</p>
+        <p>How do we do that? We write our first Chef cookbook. But before we do that we should setup a file structure that will help us organise our various Chef files. Opscode, the makers of Chef provide one. They call it simply the Chef Repository.</p>
 
         <pre class="terminal">root@intro:~# wget http://github.com/opscode/chef-repo/tarball/master
 root@intro:~# tar -zxf master
@@ -87,6 +87,59 @@ root@intro:~/chef-repo# ls
 <span class="folder">certificates</span>  chefignore  <span class="folder">config</span>  <span class="folder">cookbooks</span>  <span class="folder">data_bags</span>  <span class="folder">environments</span>  LICENSE  Rakefile
 README.md <span class="folder">roles</span></pre>
       
+        <p>Our Chef cookbook should unsurprisingly reside within the cookbooks directory. We're going to call it "phpapp". We can use the command <strong>knife</strong> to help us manage our cookbooks. First we should tell knife where to find our cookbooks directory.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# mkdir .chef
+root@intro:~/chef-repo# echo "cookbook_path [ '/root/chef-repo/cookbooks' ]" > .chef/knife.rb</pre>
+
+        <p>Now we'll ask knife to create our "phpapp" cookbook.</p>
+        <pre class="terminal">root@intro:~/chef-repo# knife cookbook create phpapp
+** Creating cookbook phpapp
+** Creating README for cookbook: phpapp
+** Creating CHANGELOG for cookbook: phpapp
+** Creating metadata for cookbook: phpapp</pre>
+  
+        <p>So let's look at what knife has created.</p>
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp
+root@intro:~/chef-repo/cookbooks/phpapp# ls
+<span class="folder">attributes</span>  CHANGELOG.md  <span class="folder">definitions</span>  <span class="folder">files</span>  <span class="folder">libraries</span>  metadata.rb  <span class="folder">providers</span>  README.md<br><span class="folder">recipes</span>  <span class="folder">resources</span>  <span class="folder">templates</span></pre>
+  
+        <p>So now we'd need write our cookbook to install and configure Apache, MySQL and PHP. How do we do that? Well, thanks to the open source nature of Chef, we don't have to. Welcome to the <a href="http://community.opscode.com/cookbooks">Opscode Community</a> cookbook site.</p>
+
+        <p><img class="img-rounded" src="assets/img/cookbooksite.png" /></p>
+
+        <p>Here you'll find lots of well crafted, tested and battle hardened cookbooks that will do most of the work for you. Think of them as libraries you will use inside your code. We'll start with the <strong>apache2</strong> cookbook. There's no need to manually download it from the community site, knife has this functionality built in.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ..
+root@intro:~/chef-repo/cookbooks# knife cookbook site download apache2
+Downloading apache2 from the cookbooks site at version 1.5.0 to /root/chef-repo/cookbooks/apache2-1.5.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/apache2-1.5.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf apache2-1.5.0.tar.gz
+root@intro:~/chef-repo/cookbooks# rm apache2-1.5.0.tar.gz</pre>
+
+        <p class="muted">Of course, your version number may be different.</p>
+
+        <p>Let's go back into our cookbook.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd phpapp</pre>
+
+        <p>Open metadata.rb in your text editor.</p>
+
+
+        <pre class="editor">name             'phpapp'
+maintainer       'YOUR_COMPANY_NAME'
+maintainer_email 'YOUR_EMAIL'
+license          'All rights reserved'
+description      'Installs/Configures phpapp'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          '0.1.0'
+
+</pre>
+
+
+
+        <p>Open recipes/default.rb in your favourite editor.</p>
+
       </div>
 
       <div id="push"></div>

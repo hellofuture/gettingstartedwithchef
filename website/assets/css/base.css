@@ -41,15 +41,14 @@ body {
 
 .terminal {
   margin: 15px inherit;
-  background-color: #000;
+  background-color: #333;
   color: #eee;
   font-size: 0.75em;
 }
 
 .terminal .folder {
-  color: blue;
+  color: #aa00ff;
 }
-
 
 /* Custom page CSS
 -------------------------------------------------- */
