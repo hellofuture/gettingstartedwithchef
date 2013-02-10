@@ -39,6 +39,10 @@ body {
   margin-bottom: 10px;
 }
 
+p {
+  margin: 15px 0;
+}
+
 .terminal {
   margin: 15px inherit;
   background-color: #333;
@@ -48,6 +52,19 @@ body {
 
 .terminal .folder {
   color: #aa00ff;
+}
+
+.terminal .action {
+  color: green;
+  font-style: normal;
+}
+
+.terminal .diff {
+  color: #888;
+}
+
+.code2add {
+  color: green;
 }
 
 /* Custom page CSS
