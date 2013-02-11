@@ -125,7 +125,7 @@ root@intro:~/chef-repo/cookbooks# rm apache2-1.5.0.tar.gz</pre>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd phpapp</pre>
 
-        <p>Open metadata.rb in your favourite text editor.</p>
+        <p>Open metadata.rb in your favourite text editor. Vim or nano are both available by default on Ubuntu. We suggest using nano if you're not used to Vim. So type "nano metadata.rb".</p>
 
         <pre class="editor">name             'phpapp'
 maintainer       'YOUR_COMPANY_NAME'
@@ -140,7 +140,7 @@ version          '0.1.0'
       
         <p>Add the line in green. This tells Chef our cookbook relies on the apache2 cookbook to function. Save the file. Then open recipes/default.rb in your text editor.</p>
 
-        <pre>#
+        <pre class="editor">#
 # Cookbook Name:: phpapp
 # Recipe:: default
 #
@@ -159,12 +159,12 @@ version          '0.1.0'
 
         <p>Create a new file called solo.rb in your text editor.
 
-        <pre><strong class="code2add">file_cache_path "/root/chef-solo"
+        <pre class="editor"><strong class="code2add">file_cache_path "/root/chef-solo"
 cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
         <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called roles/web.js.</p>
 
-        <pre><strong class="code2add">{
+        <pre class="editor"><strong class="code2add">{
   "name": "web",
   "default_attributes": { },
   "override_attributes": { },
@@ -178,760 +178,104 @@ cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
         <h3>Our First Chef Run</h3>
 
         <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j roles/web.json
+Starting Chef Client, version 11.2.0</pre>
+
+        <p>We'll cut the terminal output off there. Chef gives you comprehensive information about exactly what it's done. By default, the actions it's taken are displayed in green and when it updates a template it shows you what's changed.</p>
+
+        <p>Now you can visit your new apache server.</p>
+
+        <p><img class="img-rounded" src="assets/img/window.png" /></p>
+
+        <p>Next we'll setup MySQL. The community site has cookbooks for both so it's similar to Apache. Again we'll ask knife to fetch the cookbook from the community site for us.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
+root@intro:~/chef-repo/cookbooks# knife cookbook site download mysql 
+Downloading mysql from the cookbooks site at version 2.1.2 to /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf mysql-2.1.2.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm mysql-2.1.2.tar.gz</pre>
+
+        <p>So let's install MySQL then. We want both to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
+    
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd mysql/recipes/
+root@intro:~/chef-repo/cookbooks/mysql/recipes# ls
+client.rb  default.rb  ruby.rb  server_ec2.rb  server.rb</pre>
+
+        <p>There's a client recipe and a server recipe. We'll need to include both then. Go back to our cookbook.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/mysql/recipes# cd ../../phpapp</pre>
+
+        <p>Open metadata.rb in your text editor.</p>
+
+        <pre class="editor">name             'phpapp'
+maintainer       'YOUR_COMPANY_NAME'
+maintainer_email 'YOUR_EMAIL'
+license          'All rights reserved'
+description      'Installs/Configures phpapp'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          '0.1.0'
+
+depends "apache2"
+<strong class="code2add">depends "mysql"</strong>
+</pre>
+
+        <p>Add the line in green and save the file. Now edit recipes/default.rb.</p>
+
+        <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+<strong class="code2add">include_recipe "mysql::client"
+include_recipe "mysql::server"</strong>
+</pre>
+        
+        <p>Add the two lines in green and save the file. Now let's run chef-solo again!</p>
+
+        <h3>Our Second Chef Run</h3>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j roles/web.json
 Starting Chef Client, version 11.2.0
 Compiling Cookbooks...
-[2013-02-10T19:25:00+00:00] WARN: Cloning resource attributes for service[apache2] from prior resource (CHEF-3694)
-[2013-02-10T19:25:00+00:00] WARN: Previous service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:24:in `from_file'
-[2013-02-10T19:25:00+00:00] WARN: Current  service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:221:in `from_file'
-Converging 34 resources
-Recipe: apache2::default
-  * package[apache2] action install
-    <em class="action">- install version 2.2.22-6ubuntu2 of package apache2</em>
+[2013-02-11T21:47:33+00:00] ERROR: Running exception handlers
+[2013-02-11T21:47:33+00:00] ERROR: Exception handlers complete
+Chef Client failed. 0 resources updated
+[2013-02-11T21:47:33+00:00] FATAL: Stacktrace dumped to /root/chef-solo/chef-stacktrace.out
+[2013-02-11T21:47:33+00:00] FATAL: Chef::Exceptions::CookbookNotFound: Cookbook build-essential not found. If you're loading build-essential from another cookbook, make sure you configure the dependency in your metadata</pre>
 
-  * service[apache2] action enable (up to date)
-  * directory[/etc/apache2/ssl] action create
-    <em class="action">- create new directory /etc/apache2/ssl
-    - change mode from '' to '0755'
-    - change owner from '' to 'root'
-    - change group from '' to 'root'</em>
+        <p>Oh that's not good! We've got an error. The cookbook build-essential is not found. We haven't included it in our cookbook so it's probably required by the mysql cookbook we've just added. We know we have to specify the cookbook dependencies for our cookbook in metadata.rb, so we'll look at the metadata.rb file in the mysql cookbook.</p>
 
-  * directory[/etc/apache2/conf.d] action create (up to date)
-  * directory[/var/cache/apache2] action create
-    <em class="action">- change owner from 'www-data' to 'root'
-    - change group from 'www-data' to 'root'</em>
+        <p>Open cookbooks/mysql/metadata.rb in your editor.</p>
 
-  * template[/etc/sysconfig/httpd] action create (skipped due to only_if)
-  * template[apache2.conf] action create
-    <em class="action">-- update template[apache2.conf] from 43bee3 to 1d49c1</em>
-      <span class="diff">--- /etc/apache2/apache2.conf 2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-1yq89u4 2013-02-10 19:25:02.000000000 +0000
-        @@ -1,94 +1,20 @@
-        -# This is the main Apache server configuration file.  It contains the
-        -# configuration directives that give the server its instructions.
-        -# See http://httpd.apache.org/docs/2.2/ for detailed information about
-        -# the directives and /usr/share/doc/apache2-common/README.Debian.gz about
-        -# Debian specific hints.
-         #
-        +# Generated by Chef
-         #
-        -# Summary of how the Apache 2 configuration works in Debian:
-        -# The Apache 2 web server configuration in Debian is quite different to
-        -# upstream's suggested way to configure the web server. This is because Debian's
-        -# default Apache2 installation attempts to make adding and removing modules,
-        -# virtual hosts, and extra configuration directives as flexible as possible, in
-        -# order to make automating the changes and administering the server as easy as
-        -# possible.
-        -
-        -# It is split into several files forming the configuration hierarchy outlined
-        -# below, all located in the /etc/apache2/ directory:
-        -#
-        -#  /etc/apache2/
-        -#  |-- apache2.conf
-        -#  | `--  ports.conf
-        -#  |-- mods-enabled
-        -#  | |-- *.load
-        -#  | `-- *.conf
-        -#  |-- conf.d
-        -#  | `-- *
-        -#  `-- sites-enabled
-        -#    `-- *
-        -#
-        -#
-        -# * apache2.conf is the main configuration file (this file). It puts the pieces
-        -#   together by including all remaining configuration files when starting up the
-        -#   web server.
-        -#
-        -#   In order to avoid conflicts with backup files, the Include directive is
-        -#   adapted to ignore files that:
-        -#   - do not begin with a letter or number
-        -#   - contain a character that is neither letter nor number nor _-.
-        -#   - contain .dpkg
-        -#
-        -# * ports.conf is always included from the main configuration file. It is
-        -#   supposed to determine listening ports for incoming connections, and which
-        -#   of these ports are used for name based virtual hosts.
-        -#
-        -# * Configuration files in the mods-enabled/ and sites-enabled/ directories
-        -#   contain particular configuration snippets which manage modules or virtual
-        -#   host configurations, respectively.
-        -#
-        -#   They are activated by symlinking available configuration files from their
-        -#   respective *-available/ counterparts. These should be managed by using our
-        -#   helpers a2enmod/a2dismod, a2ensite/a2dissite. See
-        -#   their respective man pages for detailed information.
-        -#
-        -# * Configuration files in the conf.d directory are either provided by other
-        -#   packages or may be added by the local administrator. Local additions
-        -#   should start with local- or end with .local or .local.conf to avoid name
-        -#   clashes. All files in conf.d are included 
-        -#
-        -# * The binary is called apache2. Due to the use of environment variables, in
-        -#   the default configuration, apache2 needs to be started/stopped with
-        -#   /etc/init.d/apache2 or apache2ctl. Calling /usr/bin/apache2 directly will not
-        -#   work with the default configuration.
-        +# Based on the Ubuntu apache2.conf
-         
-        -
-        -# Global configuration
-        -#
-        -
-        -#
-        -# ServerRoot: The top of the directory tree under which the server's
-        -# configuration, error, and log files are kept.
-        -#
-        -# NOTE!  If you intend to place this on an NFS (or otherwise network)
-        -# mounted filesystem then please read the LockFile documentation (available
-        -# at <URL:http://httpd.apache.org/docs/2.2/mod/mpm_common.html#lockfile>);
-        -# you will save yourself a lot of trouble.
-        -#
-        -# Do NOT add a slash at the end of the directory path.
-        -#
-        -#ServerRoot &quot;/etc/apache2&quot;
-        +ServerRoot &quot;/etc/apache2&quot;
-         
-         #
-         # The accept serialization lock file MUST BE STORED ON A LOCAL DISK.
-         #
-        -LockFile ${APACHE_LOCK_DIR}/accept.lock
-        +LockFile /var/lock/apache2/accept.lock
-         
-         #
-         # PidFile: The file in which the server should record its process
-         # identification number when it starts.
-        -# This needs to be set in /etc/apache2/envvars
-         #
-        -PidFile ${APACHE_PID_FILE}
-        +PidFile /var/run/apache2.pid
-         
-         #
-         # Timeout: The number of seconds before receives and sends time out.
-        @@ -125,53 +51,32 @@
-         # MaxClients: maximum number of server processes allowed to start
-         # MaxRequestsPerChild: maximum number of requests a server process serves
-         <IfModule mpm_prefork_module>
-        -    StartServers          5
-        -    MinSpareServers       5
-        -    MaxSpareServers      10
-        -    MaxClients          150
-        -    MaxRequestsPerChild   0
-        +    StartServers          16
-        +    MinSpareServers       16
-        +    MaxSpareServers       32
-        +    ServerLimit           400
-        +    MaxClients            400
-        +    MaxRequestsPerChild   10000
-         </IfModule>
-         
-         # worker MPM
-         # StartServers: initial number of server processes to start
-        -# MinSpareThreads: minimum number of worker threads which are kept spare
-        -# MaxSpareThreads: maximum number of worker threads which are kept spare
-        -# ThreadLimit: ThreadsPerChild can be changed to this maximum value during a
-        -#              graceful restart. ThreadLimit can only be changed by stopping
-        -#              and starting Apache.
-        -# ThreadsPerChild: constant number of worker threads in each server process
-         # MaxClients: maximum number of simultaneous client connections
-        -# MaxRequestsPerChild: maximum number of requests a server process serves
-        -<IfModule mpm_worker_module>
-        -    StartServers          2
-        -    MinSpareThreads      25
-        -    MaxSpareThreads      75 
-        -    ThreadLimit          64
-        -    ThreadsPerChild      25
-        -    MaxClients          150
-        -    MaxRequestsPerChild   0
-        -</IfModule>
-        -
-        -# event MPM
-        -# StartServers: initial number of server processes to start
-         # MinSpareThreads: minimum number of worker threads which are kept spare
-         # MaxSpareThreads: maximum number of worker threads which are kept spare
-         # ThreadsPerChild: constant number of worker threads in each server process
-        -# MaxClients: maximum number of simultaneous client connections
-         # MaxRequestsPerChild: maximum number of requests a server process serves
-        -<IfModule mpm_event_module>
-        -    StartServers          2
-        -    MinSpareThreads      25
-        -    MaxSpareThreads      75 
-        -    ThreadLimit          64
-        -    ThreadsPerChild      25
-        -    MaxClients          150
-        +<IfModule mpm_worker_module>
-        +    StartServers          4
-        +    MaxClients            1024
-        +    MinSpareThreads       64
-        +    MaxSpareThreads       192
-        +    ThreadsPerChild       64
-             MaxRequestsPerChild   0
-         </IfModule>
-         
-        -# These need to be set in /etc/apache2/envvars
-        -User ${APACHE_RUN_USER}
-        -Group ${APACHE_RUN_GROUP}
-        +User www-data
-        +Group www-data
-         
-         #
-         # AccessFileName: The name of the file to look for in each directory
-        @@ -188,7 +93,6 @@
-         <Files ~ "^\.ht">
-             Order allow,deny
-             Deny from all
-        -    Satisfy all
-         </Files>
-         
-         #
-        @@ -200,14 +104,7 @@
-         # keep browsers from trying to display binary files as though they are
-         # text.
-         #
-        -# It is also possible to omit any default MIME type and let the
-        -# client's browser guess an appropriate action instead. Typically the
-        -# browser will decide based on the file's extension then. In cases
-        -# where no good assumption can be made, letting the default MIME type
-        -# unset is suggested  instead of forcing the browser to accept
-        -# incorrect  metadata.
-        -#
-        -DefaultType None
-        +DefaultType text/plain
-         
-         
-         #
-        @@ -226,7 +123,7 @@
-         # logged here.  If you *do* define an error logfile for a <VirtualHost>
-         # container, that host's errors will be logged there and not here.
-         #
-        -ErrorLog ${APACHE_LOG_DIR}/error.log
-        +ErrorLog /var/log/apache2/error.log
-         
-         #
-         # LogLevel: Control the number of messages logged to the error_log.
-        @@ -235,29 +132,94 @@
-         #
-         LogLevel warn
-         
-        +# COOK-1021: Dummy LoadModule directive to aid module installations
-        +#LoadModule dummy_module modules/mod_dummy.so
-        +
-         # Include module configuration:
-        -Include mods-enabled/*.load
-        -Include mods-enabled/*.conf
-        +Include /etc/apache2/mods-enabled/*.load
-        +Include /etc/apache2/mods-enabled/*.conf
-        +
-         
-        -# Include list of ports to listen on and which to use for name based vhosts
-        -Include ports.conf
-        +# Include ports listing
-        +Include /etc/apache2/ports.conf
-         
-         #
-         # The following directives define some format nicknames for use with
-         # a CustomLog directive (see below).
-        -# If you are behind a reverse proxy, you might want to change %h into %{X-Forwarded-For}i
-         #
-         LogFormat &quot;%v:%p %h %l %u %t \&quot;%r\&quot; %&gt;s %O \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot;&quot; vhost_combined
-        -LogFormat &quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %O \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot;&quot; combined
-        -LogFormat &quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %O&quot; common
-        +LogFormat &quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b \&quot;%{Referer}i\&quot; \&quot;%{User-Agent}i\&quot;&quot; combined
-        +LogFormat &quot;%h %l %u %t \&quot;%r\&quot; %&gt;s %b&quot; common
-         LogFormat &quot;%{Referer}i -&gt; %U&quot; referer
-         LogFormat &quot;%{User-agent}i&quot; agent
-        +#
-        +
-        +# Customizable error responses come in three flavors:
-        +# 1) plain text 2) local redirects 3) external redirects
-        +#
-        +# Some examples:
-        +#ErrorDocument 500 &quot;The server made a boo boo.&quot;
-        +#ErrorDocument 404 /missing.html
-        +#ErrorDocument 404 &quot;/cgi-bin/missing_handler.pl&quot;
-        +#ErrorDocument 402 http://www.example.com/subscription_info.html
-        +#
-        +
-        +#
-        +# Putting this all together, we can internationalize error responses.
-        +#
-        +# We use Alias to redirect any /error/HTTP_<error>.html.var response to
-        +# our collection of by-error message multi-language collections.  We use 
-        +# includes to substitute the appropriate text.
-        +#
-        +# You can modify the messages' appearance without changing any of the
-        +# default HTTP_<error>.html.var files by adding the line:
-        +#
-        +#   Alias /error/include/ &quot;/your/include/path/&quot;
-        +#
-        +# which allows you to create your own set of files by starting with the
-        +# /usr/share/apache2/error/include/ files and copying them to /your/include/path/, 
-        +# even on a per-VirtualHost basis.  The default include files will display
-        +# your Apache version number and your ServerAdmin email address regardless
-        +# of the setting of ServerSignature.
-        +#
-        +# The internationalized error documents require mod_alias, mod_include
-        +# and mod_negotiation.  To activate them, uncomment the following 30 lines.
-        +
-        +#    Alias /error/ &quot;/usr/share/apache2/error/&quot;
-        +#
-        +#    <Directory "/usr/share/apache2/error">
-        +#        AllowOverride None
-        +#        Options IncludesNoExec
-        +#        AddOutputFilter Includes html
-        +#        AddHandler type-map var
-        +#        Order allow,deny
-        +#        Allow from all
-        +#        LanguagePriority en cs de es fr it nl sv pt-br ro
-        +#        ForceLanguagePriority Prefer Fallback
-        +#    </Directory>
-        +#
-        +#    ErrorDocument 400 /error/HTTP_BAD_REQUEST.html.var
-        +#    ErrorDocument 401 /error/HTTP_UNAUTHORIZED.html.var
-        +#    ErrorDocument 403 /error/HTTP_FORBIDDEN.html.var
-        +#    ErrorDocument 404 /error/HTTP_NOT_FOUND.html.var
-        +#    ErrorDocument 405 /error/HTTP_METHOD_NOT_ALLOWED.html.var
-        +#    ErrorDocument 408 /error/HTTP_REQUEST_TIME_OUT.html.var
-        +#    ErrorDocument 410 /error/HTTP_GONE.html.var
-        +#    ErrorDocument 411 /error/HTTP_LENGTH_REQUIRED.html.var
-        +#    ErrorDocument 412 /error/HTTP_PRECONDITION_FAILED.html.var
-        +#    ErrorDocument 413 /error/HTTP_REQUEST_ENTITY_TOO_LARGE.html.var
-        +#    ErrorDocument 414 /error/HTTP_REQUEST_URI_TOO_LARGE.html.var
-        +#    ErrorDocument 415 /error/HTTP_UNSUPPORTED_MEDIA_TYPE.html.var
-        +#    ErrorDocument 500 /error/HTTP_INTERNAL_SERVER_ERROR.html.var
-        +#    ErrorDocument 501 /error/HTTP_NOT_IMPLEMENTED.html.var
-        +#    ErrorDocument 502 /error/HTTP_BAD_GATEWAY.html.var
-        +#    ErrorDocument 503 /error/HTTP_SERVICE_UNAVAILABLE.html.var
-        +#    ErrorDocument 506 /error/HTTP_VARIANT_ALSO_VARIES.html.var
-        +
-         
-        -# Include of directories ignores editors' and dpkg's backup files,
-        -# see the comments above for details.
-         
-         # Include generic snippets of statements
-        -Include conf.d/
-        +Include /etc/apache2/conf.d/
-         
-         # Include the virtual host configurations:
-        -Include sites-enabled/
-        +Include /etc/apache2/sites-enabled/</span>
+        <pre class="editor">name          "mysql"
+maintainer        "Opscode, Inc."
+maintainer_email  "cookbooks@opscode.com"
+license           "Apache 2.0"
+description       "Installs and configures mysql for client or server"
+long_description  IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version           "2.1.2"
+recipe            "mysql", "Includes the client recipe to configure a client"
+recipe            "mysql::client", "Installs packages required for mysql clients using run_action magic"
+recipe            "mysql::server", "Installs packages required for mysql servers w/o manual intervention"
+recipe            "mysql::server_ec2", "Performs EC2-specific mountpoint manipulation"
 
-  * template[apache2-conf-security] action create
-    <em class="action">- update template[apache2-conf-security] from 0290a0 to b1d6a0</em>
-        --- /etc/apache2/conf.d/security  2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-50ih6m  2013-02-10 19:25:02.000000000 +0000
-        @@ -3,7 +3,7 @@
-         # are explicitly allowed later.
-         #
-         # This currently breaks the configurations that come with some web application
-        -# Debian packages.
-        +# Debian packages. It will be made the default for the release after lenny.
-         #
-         #<Directory />
-         #  AllowOverride None
-        @@ -24,8 +24,7 @@
-         # where Full conveys the most information, and Prod the least.
-         #
-         #ServerTokens Minimal
-        -ServerTokens OS
-        -#ServerTokens Full
-        +ServerTokens Prod 
-         
-         #
-         # Optionally add a line containing the server version and virtual host
-        @@ -36,7 +35,7 @@
-         # Set to one of:  On | Off | EMail
-         #
-         #ServerSignature Off
-        -ServerSignature On
-        +ServerSignature On 
-         
-         #
-         # Allow TRACE method
-        @@ -46,16 +45,6 @@
-         #
-         # Set to one of:  On | Off | extended
-         #
-        -TraceEnable Off
-        -#TraceEnable On
-        -
-        -#
-        -# Forbid access to version control directories
-        -#
-        -# If you use version control systems in your document root, you should
-        -# probably deny access to their directories. For example, for subversion:
-        -#
-        -#<DirectoryMatch "/\.svn">
-        -#  Require all denied
-        -#</DirectoryMatch>
-        +#TraceEnable Off
-        +TraceEnable On 
-         
+%w{ debian ubuntu centos suse fedora redhat scientific amazon freebsd windows mac_os_x }.each do |os|
+  supports os
+end
 
-  * template[apache2-conf-charset] action create (up to date)
-  * template[/etc/apache2/ports.conf] action create
-    <em class="action">- update template[/etc/apache2/ports.conf] from 69cde6 to ad54ab</em>
-        --- /etc/apache2/ports.conf 2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-lzhp38  2013-02-10 19:25:02.000000000 +0000
-        @@ -1,23 +1,4 @@
-        -# If you just change the port or add more ports here, you will likely also
-        -# have to change the VirtualHost statement in
-        -# /etc/apache2/sites-enabled/000-default
-        -# This is also true if you have upgraded from before 2.2.9-3 (i.e. from
-        -# Debian etch). See /usr/share/doc/apache2.2-common/NEWS.Debian.gz and
-        -# README.Debian.gz
-        -
-        -NameVirtualHost *:80
-        +#This file generated via template by Chef.
-         Listen 80
-        -
-        -<IfModule mod_ssl.c>
-        -    # If you add NameVirtualHost *:443 here, you will also have to change
-        -    # the VirtualHost statement in /etc/apache2/sites-available/default-ssl
-        -    # to <VirtualHost *:443>
-        -    # Server Name Indication for SSL named virtual hosts is currently not
-        -    # supported by MSIE on Windows XP.
-        -    Listen 443
-        -</IfModule>
-        -
-        -<IfModule mod_gnutls.c>
-        -    Listen 443
-        -</IfModule>
-        +NameVirtualHost *:80
-         
-
-  * template[/etc/apache2/sites-available/default] action create
-    <em class="action">- update template[/etc/apache2/sites-available/default] from c8a457 to 596975</em>
-        --- /etc/apache2/sites-available/default  2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-d07jjc  2013-02-10 19:25:02.000000000 +0000
-        @@ -1,31 +1,45 @@
-         <VirtualHost *:80>
-        - ServerAdmin webmaster@localhost
-        +        ServerAdmin ops@example.com
-         
-        - DocumentRoot /var/www
-        - <Directory />
-        -   Options FollowSymLinks
-        -   AllowOverride None
-        - </Directory>
-        - <Directory /var/www/>
-        -   Options Indexes FollowSymLinks MultiViews
-        -   AllowOverride None
-        -   Order allow,deny
-        -   allow from all
-        - </Directory>
-        -
-        - ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
-        - <Directory "/usr/lib/cgi-bin">
-        -   AllowOverride None
-        -   Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-        -   Order allow,deny
-        -   Allow from all
-        - </Directory>
-        -
-        - ErrorLog ${APACHE_LOG_DIR}/error.log
-        -
-        - # Possible values include: debug, info, notice, warn, error, crit,
-        - # alert, emerg.
-        - LogLevel warn
-        +        DocumentRoot /var/www/
-        +        <Directory />
-        +                Options FollowSymLinks
-        +                AllowOverride None
-        +        </Directory>
-        +        <Directory /var/www/>
-        +                Options Indexes FollowSymLinks MultiViews
-        +                AllowOverride None
-        +                Order allow,deny
-        +                allow from all
-        +                # This directive allows us to have apache2's default start page
-        +                # in /apache2-default/, but still have / go to the right place
-        +                #RedirectMatch ^/$ /apache2-default/
-        +        </Directory>
-        +
-        +        ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
-        +        <Directory "/usr/lib/cgi-bin">
-        +                AllowOverride None
-        +                Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
-        +                Order allow,deny
-        +                Allow from all
-        +        </Directory>
-        +
-        +        ErrorLog /var/log/apache2/error.log
-        +
-        +        # Possible values include: debug, info, notice, warn, error, crit,
-        +        # alert, emerg.
-        +        LogLevel warn
-        +
-        +        CustomLog /var/log/apache2/access.log combined
-        +        ServerSignature On
-        +
-        +        Alias /doc/ "/usr/share/doc/"
-        +        <Directory "/usr/share/doc/">
-        +            Options Indexes MultiViews FollowSymLinks
-        +            AllowOverride None
-        +            Order deny,allow
-        +            Deny from all
-        +            Allow from 127.0.0.0/255.0.0.0 ::1/128
-        +        </Directory>
-         
-        - CustomLog ${APACHE_LOG_DIR}/access.log combined
-         </VirtualHost>
-
-Recipe: apache2::mod_status
-  * template[/etc/apache2/mods-available/status.conf] action create
-    <em class="action">- update template[/etc/apache2/mods-available/status.conf] from 5f6b3c to f93e6c</em>
-        --- /etc/apache2/mods-available/status.conf 2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-1hye8wi 2013-02-10 19:25:03.000000000 +0000
-        @@ -2,29 +2,21 @@
-         #
-         # Allow server status reports generated by mod_status,
-         # with the URL of http://servername/server-status
-        -# Uncomment and change the "192.0.2.0/24" to allow access from other hosts.
-        +# Uncomment and change the ".example.com" to allow
-        +# access from other hosts.
-         #
-         <Location /server-status>
-             SetHandler server-status
-             Order deny,allow
-             Deny from all
-        -    Allow from 127.0.0.1 ::1
-        -#    Allow from 192.0.2.0/24
-        +    Allow from localhost ip6-localhost
-        +#    Allow from .example.com
-         </Location>
-        -
-        -# Keep track of extended status information for each request
-        -ExtendedStatus On
-        -
-        -# Determine if mod_status displays the first 63 characters of a request or
-        -# the last 63, assuming the request itself is greater than 63 chars.
-        -# Default: Off
-        -#SeeRequestTail On
-        -
-        -
-        -<IfModule mod_proxy.c>
-        -    # Show Proxy LoadBalancer status in mod_status
-        -    ProxyStatus On
-        -</IfModule>
-        -
-        -
-        +#
-        +# ExtendedStatus controls whether Apache will generate "full" status
-        +# information (ExtendedStatus On) or just basic information (ExtendedStatus
-        +# Off) when the "server-status" handler is called. The default is Off.
-        +#
-        +ExtendedStatus Off
-        +#
-         </IfModule>
-
-  * execute[a2enmod status] action run (skipped due to not_if)
-Recipe: apache2::mod_alias
-  * template[/etc/apache2/mods-available/alias.conf] action create
-    <em class="action">- update template[/etc/apache2/mods-available/alias.conf] from 541075 to 146574</em>
-        --- /etc/apache2/mods-available/alias.conf  2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-1yrz3yq 2013-02-10 19:25:03.000000000 +0000
-        @@ -15,7 +15,7 @@
-         Alias /icons/ "/usr/share/apache2/icons/"
-         
-         <Directory "/usr/share/apache2/icons">
-        -    Options FollowSymlinks
-        +    Options Indexes MultiViews
-             AllowOverride None
-             Order allow,deny
-             Allow from all
-
-  * execute[a2enmod alias] action run (skipped due to not_if)
-Recipe: apache2::mod_auth_basic
-  * execute[a2enmod auth_basic] action run (skipped due to not_if)
-Recipe: apache2::mod_authn_file
-  * execute[a2enmod authn_file] action run (skipped due to not_if)
-Recipe: apache2::mod_authz_default
-  * execute[a2enmod authz_default] action run (skipped due to not_if)
-Recipe: apache2::mod_authz_groupfile
-  * execute[a2enmod authz_groupfile] action run (skipped due to not_if)
-Recipe: apache2::mod_authz_host
-  * execute[a2enmod authz_host] action run (skipped due to not_if)
-Recipe: apache2::mod_authz_user
-  * execute[a2enmod authz_user] action run (skipped due to not_if)
-Recipe: apache2::mod_autoindex
-  * template[/etc/apache2/mods-available/autoindex.conf] action create (up to date)
-  * execute[a2enmod autoindex] action run (skipped due to not_if)
-Recipe: apache2::mod_dir
-  * template[/etc/apache2/mods-available/dir.conf] action create (up to date)
-  * execute[a2enmod dir] action run (skipped due to not_if)
-Recipe: apache2::mod_env
-  * execute[a2enmod env] action run (skipped due to not_if)
-Recipe: apache2::mod_mime
-  * template[/etc/apache2/mods-available/mime.conf] action create
-    - update template[/etc/apache2/mods-available/mime.conf] from 20b5bb to 0e7755
-        --- /etc/apache2/mods-available/mime.conf 2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-1bskkwi 2013-02-10 19:25:03.000000000 +0000
-        @@ -29,16 +29,16 @@
-         AddType application/x-bzip2 .bz2
-         
-         #
-        -# DefaultLanguage and AddLanguage allows you to specify the language of 
-        -# a document. You can then use content negotiation to give a browser a 
-        +# DefaultLanguage and AddLanguage allows you to specify the language of
-        +# a document. You can then use content negotiation to give a browser a
-         # file in a language the user can understand.
-         #
-         # Specify a default language. This means that all data
-        -# going out without a specific language tag (see below) will 
-        +# going out without a specific language tag (see below) will
-         # be marked with this one. You probably do NOT want to set
-         # this unless you are sure it is correct for all cases.
-         #
-        -# * It is generally better to not mark a page as 
-        +# * It is generally better to not mark a page as
-         # * being a certain language than marking it with the wrong
-         # * language!
-         #
-        @@ -49,8 +49,8 @@
-         # language code is pl) may wish to use "AddLanguage pl .po" to
-         # avoid the ambiguity with the common suffix for perl scripts.
-         #
-        -# Note 2: The example entries below illustrate that in some cases 
-        -# the two character 'Language' abbreviation is not identical to 
-        +# Note 2: The example entries below illustrate that in some cases
-        +# the two character 'Language' abbreviation is not identical to
-         # the two character 'Country' code for its country,
-         # E.g. 'Danmark/dk' versus 'Danish/da'.
-         #
-        @@ -66,88 +66,33 @@
-         # Brazilian Portuguese (pt-BR) - Russian (ru) - Swedish (sv)
-         # Simplified Chinese (zh-CN) - Spanish (es) - Traditional Chinese (zh-TW)
-         #
-        -AddLanguage am .amh
-        -AddLanguage ar .ara
-        -AddLanguage be .be
-        -AddLanguage bg .bg
-        -AddLanguage bn .bn
-        -AddLanguage br .br
-        -AddLanguage bs .bs
-         AddLanguage ca .ca
-         AddLanguage cs .cz .cs
-        -AddLanguage cy .cy
-         AddLanguage da .dk
-         AddLanguage de .de
-        -AddLanguage dz .dz
-         AddLanguage el .el
-         AddLanguage en .en
-         AddLanguage eo .eo
-        -# es is ecmascript in /etc/mime.types
-        -RemoveType  es
-        +# See README.Debian for Spanish
-         AddLanguage es .es
-         AddLanguage et .et
-        -AddLanguage eu .eu
-        -AddLanguage fa .fa
-        -AddLanguage fi .fi
-         AddLanguage fr .fr
-        -AddLanguage ga .ga
-        -AddLanguage gl .glg
-        -AddLanguage gu .gu
-         AddLanguage he .he
-        -AddLanguage hi .hi
-         AddLanguage hr .hr
-        -AddLanguage hu .hu
-        -AddLanguage hy .hy
-        -AddLanguage id .id
-        -AddLanguage is .is
-         AddLanguage it .it
-         AddLanguage ja .ja
-        -AddLanguage ka .ka
-        -AddLanguage kk .kk
-        -AddLanguage km .km
-        -AddLanguage kn .kn
-         AddLanguage ko .ko
-        -AddLanguage ku .ku
-        -AddLanguage lo .lo
-        -AddLanguage lt .lt
-         AddLanguage ltz .ltz
-        -AddLanguage lv .lv
-        -AddLanguage mg .mg
-        -AddLanguage mk .mk
-        -AddLanguage ml .ml
-        -AddLanguage mr .mr
-        -AddLanguage ms .msa
-        -AddLanguage nb .nob
-        -AddLanguage ne .ne
-         AddLanguage nl .nl
-         AddLanguage nn .nn
-         AddLanguage no .no
-        -AddLanguage pa .pa
-         AddLanguage pl .po
-        -AddLanguage pt-BR .pt-br
-         AddLanguage pt .pt
-        -AddLanguage ro .ro
-        +AddLanguage pt-BR .pt-br
-         AddLanguage ru .ru
-        -AddLanguage sa .sa
-        -AddLanguage se .se
-        -AddLanguage si .si
-        -AddLanguage sk .sk
-        -AddLanguage sl .sl
-        -AddLanguage sq .sq
-        -AddLanguage sr .sr
-         AddLanguage sv .sv
-        -AddLanguage ta .ta
-        -AddLanguage te .te
-        -AddLanguage th .th
-        -AddLanguage tl .tl
-        -RemoveType  tr
-        -# tr is troff in /etc/mime.types
-        +# See README.Debian for Turkish
-         AddLanguage tr .tr
-        -AddLanguage uk .uk
-        -AddLanguage ur .ur
-        -AddLanguage vi .vi
-        -AddLanguage wo .wo
-        -AddLanguage xh .xh
-         AddLanguage zh-CN .zh-cn
-         AddLanguage zh-TW .zh-tw
-         
-        @@ -206,7 +151,6 @@
-         AddCharset iso-10646-ucs-2 .ucs-2 .iso-10646-ucs-2
-         AddCharset iso-10646-ucs-4 .ucs-4 .iso-10646-ucs-4
-         AddCharset shift_jis   .shift_jis .sjis
-        -AddCharset BRF         .brf
-         
-         #
-         # AddHandler allows you to map certain file extensions to "handlers":
-
-  * execute[a2enmod mime] action run (skipped due to not_if)
-Recipe: apache2::mod_negotiation
-  * template[/etc/apache2/mods-available/negotiation.conf] action create (up to date)
-  * execute[a2enmod negotiation] action run (skipped due to not_if)
-Recipe: apache2::mod_setenvif
-  * template[/etc/apache2/mods-available/setenvif.conf] action create
-    - update template[/etc/apache2/mods-available/setenvif.conf] from 1798c3 to 1afe92
-        --- /etc/apache2/mods-available/setenvif.conf 2012-07-16 07:59:04.000000000 +0000
-        +++ /tmp/chef-rendered-template20130210-17805-15edbcp 2013-02-10 19:25:03.000000000 +0000
-        @@ -22,9 +22,7 @@
-         BrowserMatch "^WebDrive" redirect-carefully
-         BrowserMatch "^WebDAVFS/1.[012]" redirect-carefully
-         BrowserMatch "^gnome-vfs/1.0" redirect-carefully
-        -BrowserMatch "^gvfs/1" redirect-carefully
-         BrowserMatch "^XML Spy" redirect-carefully
-         BrowserMatch "^Dreamweaver-WebDAV-SCM1" redirect-carefully
-        -BrowserMatch " Konqueror/4" redirect-carefully
-         
-         </IfModule>
-
-  * execute[a2enmod setenvif] action run (skipped due to not_if)
-Recipe: apache2::default
-  * execute[a2dissite default] action run
-    - execute /usr/sbin/a2dissite default
-
-  * service[apache2] action start (up to date)
-  * service[apache2] action restart
-    - restart service service[apache2]
-
-  * service[apache2] action restart
-    - restart service service[apache2]
-
-Chef Client finished, 14 resources updated</pre>
-
-
+depends "openssl"
+depends "build-essential"
+suggests "homebrew"
+suggests "windows"</pre>
+        
+        <p>There's more below but let's just concentrate on depends and suggests. The suggests entries tell Chef that some optional functionality may depend on that cookbook. We already know the depends entries specify a hard requirement. So we need to download build-essential and openssl.</p>
+    
       </div>
 
       <div id="push"></div>
