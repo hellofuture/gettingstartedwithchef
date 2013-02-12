@@ -46,7 +46,9 @@
 
         <h2>1. Introducing Chef</h2>
 
-        <p>We'll start with the simplest way to use Chef. It's called chef-solo. This allows you to install, configure and manage the packages required by your application. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
+        <p>In the first chapter we'll introduce you to Chef and we'll be working over a SSH connection. There are better ways to work with Chef and we'll get to them in later chapters but things will be keep as simple as possible to start with.</p>
+
+        <p>The simplest way to use Chef is <strong>chef-solo</strong>. It allows you to install, configure and manage the packages required by your application without the complication of any client and server configuration. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
 
         <p>Every time you have to setup a web server you have to remember loads of installation commands, edit configuration files and generally you always forget how to do something and it takes ages. Wouldn't it be nice if this was all entirely automated? With Chef we can keep our infrastructure as code alongside our applications.</p>
 
@@ -299,7 +301,7 @@ Compiling Cookbooks...
 [2013-02-12T18:44:18+00:00] WARN: Current  service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:221:in `from_file'
 [2013-02-12T18:44:18+00:00] FATAL: You must set node['mysql']['server_debian_password'], node['mysql']['server_root_password'], node['mysql']['server_repl_password'] in chef-solo mode. For more information, see https://github.com/opscode-cookbooks/mysql#chef-solo-note</pre>
       
-        <p>Again we have an error. But that's okay, the MySQL cookbook has told us how to fix the error. We need to define a root password for MySQL. This is an attribute. In Chef attributes are values which we use to configure our applications or platform. An attribute could be a port number for Apache. Often a sensible default is specified inside a cookbook. A web server port would be 80. There's no sensible default MySQL password, so we need to specify one. Open web.rb.</p>
+        <p>Again we have an error. But that's okay, the MySQL cookbook has told us how to fix the error. We need to define a root password for MySQL. This is an attribute. In Chef attributes are values which we use to configure our applications or platform. An attribute could be a port number for Apache. Often a sensible default is specified inside a cookbook. Such a default for a web server port would be 80. There's no sensible default MySQL password, so we need to specify one. Open web.rb.</p>
 
         <pre class="editor">{
   <span class="code2add">mysql": {"server_root_password": "808052769e2c6d909027a2905b224bad", "server_debian_password": "569d1ed2d46870cc020fa87be83af98d", "server_repl_password": "476911180ee92a2ee5a471f33340f6f4"},</span>
@@ -314,6 +316,65 @@ Chef Client finished, 14 resources updated</pre>
 
         <p>Much more successful, we now have MySQL. Now to install PHP. You guessed it, there's a community cookbook for PHP.</p>
 
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/
+root@intro:~/chef-repo/cookbooks# knife cookbook site download php
+Downloading php from the cookbooks site at version 1.1.8 to /root/chef-repo/cookbooks/php-1.1.8.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/php-1.1.8.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf php-1.1.8.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm php-1.1.8.tar.gz</pre>
+
+        <p>The php cookbook also depends on the xml cookbook, so let's grab that one.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# knife cookbook site download xml
+Downloading xml from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf xml-1.1.2.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm xml-1.1.2.tar.gz</pre>
+
+        <p>Next we add the new php cookbook as a dependency for our cookbook. Open phpapp/metadata.rb.</p>
+
+        <pre class="editor">name             'phpapp'
+maintainer       'YOUR_COMPANY_NAME'
+maintainer_email 'YOUR_EMAIL'
+license          'All rights reserved'
+description      'Installs/Configures phpapp'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          '0.1.0'
+
+depends "apache2"
+depends "mysql"
+<span class="code2add">depends "php"</span></pre>
+
+        <p>Add the code in green. And now lets include the php recipe to our cookbook. Open phpapp/recipes/default.rb.</p>
+
+        <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+<span class="code2add">include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"</span></pre>
+
+        <p>Add the code in green. Here we add the PHP default recipe, one to install the PHP MySQL extension and finally one to enable the Apache PHP module mod_php. And we're good to run chef-solo again to install all of those things.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.2.0
+...
+Chef Client finished, 8 resources updated</pre>
+
+        <p>So that's PHP installed.</p>
+
+
+        <p class="text-warning">*** Chapter to be completed ***</p>
     </div>
 
       <div id="push"></div>
