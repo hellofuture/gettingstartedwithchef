@@ -36,8 +36,11 @@
       <div class="container">
         <div class="page-header">
           <h1>Getting Started with Chef</h1>
+          <p class="lead">Learn how to configure, manage and provision cloud servers with Chef by following practical examples that you can use in real world application deployments.</p>
+
         </div>
-        <p class="lead">Starting with Chef can be difficult. There are a few tricky concepts to grasp and some new terminology to learn. This work in progress book gradually introduces you to Chef without throwing you in at the deep end.</p>
+
+        <p>Starting with Chef can be difficult. There are a few tricky concepts to grasp and some new terminology to learn. This work in progress book gradually introduces you to Chef without throwing you in at the deep end. You'll be shown how to configure servers with practical examples for applications large and small.</p>
 
         <p>If you find any issues with this book or have any suggestions of things you'd like to change please submit an issue or pull request over at our <a href="https://github.com/hellofuture/gettingstartedwithchef">Github page</a>.
 
@@ -65,7 +68,7 @@ Chef: 11.2.0
 </pre>
         <p class="muted">Of course, your version number may be different.</p>
 
-        <h3>Configuring Chef</h3>
+        <h3>Our First Chef Cookbook</h3>
 
         <p>So, what do we need to do to get our web server up and running?</p>
 
@@ -162,31 +165,26 @@ version          '0.1.0'
         <pre class="editor"><strong class="code2add">file_cache_path "/root/chef-solo"
 cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
-        <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called roles/web.js.</p>
+        <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called web.js.</p>
 
         <pre class="editor"><strong class="code2add">{
-  "name": "web",
-  "default_attributes": { },
-  "override_attributes": { },
-  "description": "web role",
-  "chef_type": "role",
   "run_list": [ "recipe[phpapp]" ]
 }</strong></pre>
 
-        <p>Add the lines in green. This creates our web role. A role is Chef terminology for a type of server. A server (or cloud instance) is referred to as a node. Have a look at the run_list entry. This tells Chef that we want to execute our phpapp recipe. We're all set!</p>
+        <p>Add the lines in green and we're all set!</p>
 
         <h3>Our First Chef Run</h3>
 
-        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j roles/web.json
+        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
 Starting Chef Client, version 11.2.0</pre>
 
         <p>We'll cut the terminal output off there. Chef gives you comprehensive information about exactly what it's done. By default, the actions it's taken are displayed in green and when it updates a template it shows you what's changed.</p>
 
-        <p>Now you can visit your new apache server.</p>
+        <p>Now you can visit your new Apache server.</p>
 
         <p><img class="img-rounded" src="assets/img/window.png" /></p>
 
-        <p>Next we'll setup MySQL. The community site has cookbooks for both so it's similar to Apache. Again we'll ask knife to fetch the cookbook from the community site for us.</p>
+        <p>Next we'll setup MySQL. As the community site has a cookbook for MySQL, the process is similar to Apache. Again we'll ask knife to fetch the cookbook from the community site for us.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
 root@intro:~/chef-repo/cookbooks# knife cookbook site download mysql 
@@ -195,7 +193,7 @@ Cookbook saved: /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
 root@intro:~/chef-repo/cookbooks# tar zxf mysql-2.1.2.tar.gz 
 root@intro:~/chef-repo/cookbooks# rm mysql-2.1.2.tar.gz</pre>
 
-        <p>So let's install MySQL then. We want both to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
+        <p>So let's install MySQL then. We want to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
     
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd mysql/recipes/
 root@intro:~/chef-repo/cookbooks/mysql/recipes# ls
@@ -240,7 +238,7 @@ include_recipe "mysql::server"</strong>
         <h3>Our Second Chef Run</h3>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j roles/web.json
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
 Starting Chef Client, version 11.2.0
 Compiling Cookbooks...
 [2013-02-11T21:47:33+00:00] ERROR: Running exception handlers
@@ -269,14 +267,54 @@ recipe            "mysql::server_ec2", "Performs EC2-specific mountpoint manipul
   supports os
 end
 
-depends "openssl"
-depends "build-essential"
+<strong>depends "openssl"
+depends "build-essential"</strong>
 suggests "homebrew"
 suggests "windows"</pre>
         
         <p>There's more below but let's just concentrate on depends and suggests. The suggests entries tell Chef that some optional functionality may depend on that cookbook. We already know the depends entries specify a hard requirement. So we need to download build-essential and openssl.</p>
+
+        <p>There are some good tools available to help you manage cookbooks and dependences which we'll cover in later chapters but we'll just download the required cookbooks using knife for now.</p>
     
-      </div>
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
+root@intro:~/chef-repo/cookbooks# knife cookbook site download openssl
+Downloading openssl from the cookbooks site at version 1.0.0 to /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf openssl-1.0.0.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm openssl-1.0.0.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download build-essential
+Downloading build-essential from the cookbooks site at version 1.3.4 to /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf build-essential-1.3.4.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm build-essential-1.3.4.tar.gz</pre>
+        
+        <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
+    
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd ..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.2.0
+Compiling Cookbooks...
+[2013-02-12T18:44:18+00:00] WARN: Cloning resource attributes for service[apache2] from prior resource (CHEF-3694)
+[2013-02-12T18:44:18+00:00] WARN: Previous service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:24:in `from_file'
+[2013-02-12T18:44:18+00:00] WARN: Current  service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:221:in `from_file'
+[2013-02-12T18:44:18+00:00] FATAL: You must set node['mysql']['server_debian_password'], node['mysql']['server_root_password'], node['mysql']['server_repl_password'] in chef-solo mode. For more information, see https://github.com/opscode-cookbooks/mysql#chef-solo-note</pre>
+      
+        <p>Again we have an error. But that's okay, the MySQL cookbook has told us how to fix the error. We need to define a root password for MySQL. This is an attribute. In Chef attributes are values which we use to configure our applications or platform. An attribute could be a port number for Apache. Often a sensible default is specified inside a cookbook. A web server port would be 80. There's no sensible default MySQL password, so we need to specify one. Open web.rb.</p>
+
+        <pre class="editor">{
+  <span class="code2add">mysql": {"server_root_password": "808052769e2c6d909027a2905b224bad", "server_debian_password": "569d1ed2d46870cc020fa87be83af98d", "server_repl_password": "476911180ee92a2ee5a471f33340f6f4"},</span>
+  "run_list": [ "recipe[phpapp]" ]
+}</pre>
+        
+        <p>And let's re-run chef-solo.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json   
+...
+Chef Client finished, 14 resources updated</pre>
+
+        <p>Much more successful, we now have MySQL. Now to install PHP. You guessed it, there's a community cookbook for PHP.</p>
+
+    </div>
 
       <div id="push"></div>
     </div>

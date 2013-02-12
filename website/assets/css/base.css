@@ -50,7 +50,7 @@ p {
 .terminal {
   margin: 15px inherit;
   background-color: #333;
-  color: #eee;
+  color: #ccc;
   font-size: 0.75em;
 }
 
@@ -62,6 +62,12 @@ p {
   color: green;
   font-style: normal;
 }
+
+.terminal .error {
+  color: red;
+  font-style: normal;
+}
+
 
 .terminal .diff {
   color: #888;
