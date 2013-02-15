@@ -308,7 +308,7 @@ Compiling Cookbooks...
   "run_list": [ "recipe[phpapp]" ]
 }</pre>
         
-        <p>And let's re-run chef-solo.</p>
+        <p>Add the code in green. Let's re-run chef-solo.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json   
 ...
@@ -371,8 +371,33 @@ Starting Chef Client, version 11.2.0
 ...
 Chef Client finished, 8 resources updated</pre>
 
-        <p>So that's PHP installed.</p>
+        <p>So that's PHP installed. Let's confirm that by creating a test page. Open /var/www/test.php in your editor.</p>
 
+        <pre class="editor"><span class="code2add">&lt;?php phpinfo(); ?&gt;</span></pre>
+
+        <p>Add the code in green and save the file. Now goto http://yourserver/test.php</p>
+
+        <p><img class="img-rounded" src="assets/img/phpinfo-1.png" /></p>
+
+        <p>Scroll down and make sure the MySQL extension is installed.</p>
+
+        <p><img class="img-rounded" src="assets/img/phpinfo-mysql.png" /></p>
+
+        <p>Okay, it's installed, that's great.</p>
+
+        <h3>Idempotence</h3>
+
+        <p>At this point you might well be thinking alll that was a lot of effort for not much reward. You could have installed that with a line similar to "apt-get install mysql-server apache2 php5 libapache2-mod-php5". What's happened behind the scenes though is that as well as installing our packages, Chef has updated all of the configuration files for each package with consistent defaults. If we bring up another server and run the same cookbooks, the same things will be installed. We can repeat the chef-solo command repeatedly and we'll end up with the same result as we did the first time we ran it. The process is idempotent; it will always produce the same result.</p>
+
+        <p>Now if you were setting up a server buy hand, this is where you'd manually setup a database, copy the code over, create a MySQL user for the website etc. No need. We'll use Chef. We just need to fetch a final cookbook <strong>git</strong>.</p>
+
+
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
+root@intro:~/chef-repo/cookbooks# knife cookbook site download git
+Downloading git from the cookbooks site at version 2.3.0 to /root/chef-repo/cookbooks/git-2.3.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/git-2.3.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf git-2.3.0.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm git-2.3.0.tar.gz</pre>
 
         <p class="text-warning">*** Chapter to be completed ***</p>
     </div>
