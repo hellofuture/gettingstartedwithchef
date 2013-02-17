@@ -55,7 +55,6 @@
 
         <p>Of course you can install Ubuntu in a virtual machine if preferred. If you do, create a snapshot now so we can re-use a fresh installation for later examples.</p>
 
-
         <h3>Installing Chef</h3>
 
         <p>SSH to your vanilla Ubuntu box and run the following command to install Chef. This used to be a more involved process but thanks to the new omnibus installer it couldn't be simpler.</p>
@@ -382,21 +381,61 @@ Chef Client finished, 8 resources updated</pre>
 
         <p><img class="img-rounded" src="assets/img/phpinfo-mysql.png" /></p>
 
-        <p>Okay, it's installed, that's great.</p>
+        <p>We can see MySQL is installed.</p>
 
         <h3>Idempotence</h3>
 
-        <p>At this point you might well be thinking alll that was a lot of effort for not much reward. You could have installed that with a line similar to "apt-get install mysql-server apache2 php5 libapache2-mod-php5". What's happened behind the scenes though is that as well as installing our packages, Chef has updated all of the configuration files for each package with consistent defaults. If we bring up another server and run the same cookbooks, the same things will be installed. We can repeat the chef-solo command repeatedly and we'll end up with the same result as we did the first time we ran it. The process is idempotent; it will always produce the same result.</p>
+        <p>At this point you might well be thinking all that was a lot of effort for not much reward. You could have installed that with a line similar to "apt-get install mysql-server apache2 php5 libapache2-mod-php5". What's happened behind the scenes though is that as well as installing our packages, Chef has updated all of the configuration files for each package with consistent defaults. If we bring up another server and run the same cookbooks, the same things will be installed. We can repeat the chef-solo command repeatedly and we'll end up with the same result as we did the first time we ran it. The process is idempotent; it will always produce the same result.</p>
 
-        <p>Now if you were setting up a server buy hand, this is where you'd manually setup a database, copy the code over, create a MySQL user for the website etc. No need. We'll use Chef. We just need to fetch a final cookbook <strong>git</strong>.</p>
+        <p>Now if you were setting up a server by hand, this is where you'd manually setup a database, copy the web application code over, create a MySQL user for the website and configure virtual hosts. Instead, we'll use Chef to automate the setup of our application. This allows us to set up multiple servers and know we will always get the same results.</p>
 
+        <p>First we need to fetch a final few cookbooks. The <strong>git</strong> cookbook will install git so we can fetch the code for our web application. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
 root@intro:~/chef-repo/cookbooks# knife cookbook site download git
 Downloading git from the cookbooks site at version 2.3.0 to /root/chef-repo/cookbooks/git-2.3.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/git-2.3.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf git-2.3.0.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm git-2.3.0.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# knife cookbook site download database
+Downloading database from the cookbooks site at version 1.3.12 to /root/chef-repo/cookbooks/database-1.3.12.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/database-1.3.12.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download postgresql
+Downloading postgresql from the cookbooks site at version 2.2.2 to /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download xfs
+Downloading xfs from the cookbooks site at version 1.1.0 to /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download aws
+Downloading aws from the cookbooks site at version 0.100.6 to /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf *.tar.gz 
+root@intro:~/chef-repo/cookbooks# rm *.tar.gz</pre>
+
+        <p>We'll now add the new dependencies to our cookbook. Open phpapp/metadata.rb.</p>
+
+        <pre class="editor">name             'phpapp'
+maintainer       'YOUR_COMPANY_NAME'
+maintainer_email 'YOUR_EMAIL'
+license          'All rights reserved'
+description      'Installs/Configures phpapp'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          '0.1.0'
+
+depends "apache2"
+depends "mysql"
+depends "php"
+<span class="code2add">depends "git"
+depends "database"</span></pre>
+
+        <p>Add the code in green and save the file. It's now time to write our first Chef recipe. To setup our web application we need to:</p>
+
+        <ol>
+            <li>Create a MySQL database for our application</li>
+            <li>Create a MySQL database users for our application</li>
+            <li>Import database schema and any initial data</li>
+            <li>Fetch our web application code with Git</li>
+            <li>Create a configuration file with database details for our web application</li>
+            <li>Create an Apache virtualhost for our web application</li>
+        </ol>
 
         <p class="text-warning">*** Chapter to be completed ***</p>
     </div>
