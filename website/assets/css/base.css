@@ -75,6 +75,16 @@ p {
 
 .code2add {
   color: green;
+  font-weight: bold;
+}
+
+.code2change {
+  color: blue;
+}
+
+.code2highlight {
+  font-weight: bold;
+  color: yellow;
 }
 
 /* Custom page CSS

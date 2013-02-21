@@ -68,7 +68,7 @@ Chef: 11.2.0
 </pre>
         <p class="muted">Of course, your version number may be different.</p>
 
-        <h3>Our First Chef Cookbook</h3>
+        <h3>Our first Chef cookbook</h3>
 
         <p>So, what do we need to do to get our web server up and running?</p>
 
@@ -173,7 +173,7 @@ cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
         <p>Add the lines in green and we're all set!</p>
 
-        <h3>Our First Chef Run</h3>
+        <h3>Our first Chef run</h3>
 
         <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
 Starting Chef Client, version 11.2.0</pre>
@@ -235,7 +235,7 @@ include_recipe "mysql::server"</strong>
         
         <p>Add the two lines in green and save the file. Now let's run chef-solo again!</p>
 
-        <h3>Our Second Chef Run</h3>
+        <h3>Our second Chef run</h3>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
@@ -385,29 +385,56 @@ Chef Client finished, 8 resources updated</pre>
 
         <h3>Idempotence</h3>
 
-        <p>At this point you might well be thinking all that was a lot of effort for not much reward. You could have installed that with a line similar to "apt-get install mysql-server apache2 php5 libapache2-mod-php5". What's happened behind the scenes though is that as well as installing our packages, Chef has updated all of the configuration files for each package with consistent defaults. If we bring up another server and run the same cookbooks, the same things will be installed. We can repeat the chef-solo command repeatedly and we'll end up with the same result as we did the first time we ran it. The process is idempotent; it will always produce the same result.</p>
+        <p>At this point you might well be thinking all that was a lot of effort for not much reward. You could have installed that with a line similar to "apt-get install mysql-server apache2 php5 libapache2-mod-php5". What's happened behind the scenes though is that as well as installing our packages, Chef has updated all of the configuration files for each package with consistent defaults. If we bring up another server and run the same cookbooks, the same things will be installed. We can repeat the chef-solo command repeatedly and we'll end up with the same result as we did the first time we ran it. The process is idempotent; it will always produce the same result no matter how many times it is run.</p>
 
         <p>Now if you were setting up a server by hand, this is where you'd manually setup a database, copy the web application code over, create a MySQL user for the website and configure virtual hosts. Instead, we'll use Chef to automate the setup of our application. This allows us to set up multiple servers and know we will always get the same results.</p>
 
-        <p>First we need to fetch a final few cookbooks. The <strong>git</strong> cookbook will install git so we can fetch the code for our web application. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
+        <p>First we need to fetch a final few cookbooks. The <strong>git</strong> cookbook will install git so we can fetch the code for our web application. The git cookbook depends on quite a few cookbooks which we'll need even though we won't use them. These are <strong>windows</strong>, <strong>dmg</strong>, <strong>runit</strong>, <strong>chef_handler</strong> and <strong>yum</strong>.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
 root@intro:~/chef-repo/cookbooks# knife cookbook site download git
 Downloading git from the cookbooks site at version 2.3.0 to /root/chef-repo/cookbooks/git-2.3.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/git-2.3.0.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download database
+root@intro:~/chef-repo/cookbooks# tar zxf git-2.3.0.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download windows
+Downloading windows from the cookbooks site at version 1.8.4 to /root/chef-repo/windows-1.8.4.tar.gz
+Cookbook saved: /root/chef-repo/windows-1.8.4.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf windows-1.8.4.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download dmg
+Downloading dmg from the cookbooks site at version 1.1.0 to /root/chef-repo/dmg-1.1.0.tar.gz
+Cookbook saved: /root/chef-repo/dmg-1.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf dmg-1.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# knife cookbook site download runit
+Downloading runit from the cookbooks site at version 1.0.4 to /root/chef-repo/cookbooks/runit-1.0.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/runit-1.0.4.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf runit-1.0.4.tar.gz 
+root@intro:~/chef-repo/cookbooks# knife cookbook site download chef_handler
+Downloading chef_handler from the cookbooks site at version 1.1.4 to /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf chef_handler-1.1.4.tar.gz 
+root@intro:~/chef-repo/cookbooks# knife cookbook site download yum
+Downloading yum from the cookbooks site at version 2.1.0 to /root/chef-repo/cookbooks/yum-2.1.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/yum-2.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf yum-2.1.0.tar.gz</pre>
+
+        <p>The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# knife cookbook site download database
 Downloading database from the cookbooks site at version 1.3.12 to /root/chef-repo/cookbooks/database-1.3.12.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/database-1.3.12.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf atabase-1.3.12.tar.gz
 root@intro:~/chef-repo/cookbooks# knife cookbook site download postgresql
 Downloading postgresql from the cookbooks site at version 2.2.2 to /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf postgresql-2.2.2.tar.gz
 root@intro:~/chef-repo/cookbooks# knife cookbook site download xfs
 Downloading xfs from the cookbooks site at version 1.1.0 to /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf xfs-1.1.0.tar.gz
 root@intro:~/chef-repo/cookbooks# knife cookbook site download aws
 Downloading aws from the cookbooks site at version 0.100.6 to /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf *.tar.gz 
+root@intro:~/chef-repo/cookbooks# tar zxf aws-0.100.6.tar.gz
 root@intro:~/chef-repo/cookbooks# rm *.tar.gz</pre>
 
         <p>We'll now add the new dependencies to our cookbook. Open phpapp/metadata.rb.</p>
@@ -436,6 +463,75 @@ depends "database"</span></pre>
             <li>Create a configuration file with database details and other configuration options for our web application</li>
             <li>Create an Apache virtualhost for our web application</li>
         </ol>
+
+        <h3>Writing our recipe </h3>
+
+        <p>A resource is an action that your recipe can perform. The <strong>template</strong> resource creates a file by expanding variables in a template. The <strong>user</strong> resource can be used to manage users. Chef ships with many other useful resources, an overview of which can be found later in the chapter <em>Resources</em>. The database cookbook provides the resources <strong>mysql_database</strong> which we will now use to perform the first step.</p>
+
+        <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"
+
+<span class="code2add">mysql_database 'phpapp' do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end</span></pre>
+    
+        <p>Add the code in green but hang on a minute. We've hard-coded the name of the database name to be &quot;phpapp&quot;. That could prevent our recipe from being reusable. Really the database name should be an attribute. Let's change our code so that's the case.</p>
+
+        <pre class="editor">mysql_database <span class="code2add">node['phpapp']['database']</span> do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end</span></pre>
+    
+        <p>Replace 'phpapp' with node['phpapp']['database']. Save the file. Let's see run chef-solo again and see if our changes are successful.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd ..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.2.0
+Compiling Cookbooks...</pre>
+
+        <p>And that's failed. Let's look at the key parts of the message we received; highlighted bellow in yellow.</p>
+        
+        <pre class="terminal">NoMethodError
+-------------
+<span class="code2highlight">undefined method `[]' for nil:NilClass</span>
+
+
+Cookbook Trace:
+---------------
+  /root/chef-repo/cookbooks/phpapp/recipes/default.rb:17:in `from_file'
+
+Relevant File Content:
+----------------------
+/root/chef-repo/cookbooks/phpapp/recipes/default.rb:
+
+ 10:  include_recipe "apache2"
+ 11:  include_recipe "mysql::client"
+ 12:  include_recipe "mysql::server"
+ 13:  include_recipe "php"
+ 14:  include_recipe "php::module_mysql"
+ 15:  include_recipe "apache2::mod_php5"
+ 16:  
+ <span class="code2highlight">17>> mysql_database node['phpapp']['database'] do</span>
+ 18:    connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+ 19:    action :create
+ 20:  end
+ 21:</pre>
+
+        <p>The message <strong>undefined method `[]' for nil:NilClass</strong> is Ruby telling us that <strong>node['phpapp']['database']</strong> doesn't exist. We need to define it.</p>
 
         <p class="text-warning">*** Chapter to be completed ***</p>
     </div>
