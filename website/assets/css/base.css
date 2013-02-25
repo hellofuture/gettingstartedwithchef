@@ -73,6 +73,12 @@ p {
   color: #888;
 }
 
+.terminal .hide {
+  display: none;
+}
+
+
+
 .code2add {
   color: green;
   font-weight: bold;

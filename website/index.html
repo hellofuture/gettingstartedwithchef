@@ -59,12 +59,14 @@
 
         <p>SSH to your vanilla Ubuntu box and run the following command to install Chef. This used to be a more involved process but thanks to the new omnibus installer it couldn't be simpler.</p>
 
-        <pre class="terminal">root@intro:~# sudo true && curl -L https://www.opscode.com/chef/install.sh | sudo bash</pre>
+        <pre class="terminal">root@intro:~# sudo true && curl -L https://www.opscode.com/chef/install.sh | sudo bash
+Thank you for installing Chef!</pre>
 
         <p>Confirm Chef has successfully installed.</p>
 
-        <pre class="terminal">root@intro:~# chef-solo -v
-Chef: 11.2.0
+        <pre class="terminal">root@intro:~# chef-client -v
+<span class="muted">...</span>
+Chef: 11.4.0
 </pre>
         <p class="muted">Of course, your version number may be different.</p>
 
@@ -83,7 +85,9 @@ Chef: 11.2.0
 
         <pre class="terminal">root@intro:~# wget http://github.com/opscode/chef-repo/tarball/master
 root@intro:~# tar -zxf master
-root@intro:~# mv opscode-chef-repo* chef-repo</pre>
+root@intro:~# mv opscode-chef-repo* chef-repo
+root@intro:~# rm master
+</pre>
       
         <p>If we look inside the chef-repo directory we can see the following:</p>
 
@@ -117,12 +121,10 @@ root@intro:~/chef-repo/cookbooks/phpapp# ls
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ..
 root@intro:~/chef-repo/cookbooks# knife cookbook site download apache2
-Downloading apache2 from the cookbooks site at version 1.5.0 to /root/chef-repo/cookbooks/apache2-1.5.0.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/apache2-1.5.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf apache2-1.5.0.tar.gz
-root@intro:~/chef-repo/cookbooks# rm apache2-1.5.0.tar.gz</pre>
-
-        <p class="muted">Of course, your version number may be different.</p>
+Downloading apache2 from the cookbooks site at version 1.6.0 to /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf apache2*
+root@intro:~/chef-repo/cookbooks# rm rm apache2*.tar.gz</pre>
 
         <p>Let's go back into our cookbook.</p>
 
@@ -165,7 +167,7 @@ version          '0.1.0'
         <pre class="editor"><strong class="code2add">file_cache_path "/root/chef-solo"
 cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
-        <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called web.js.</p>
+        <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called web.json.</p>
 
         <pre class="editor"><strong class="code2add">{
   "run_list": [ "recipe[phpapp]" ]
@@ -176,7 +178,9 @@ cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
         <h3>Our first Chef run</h3>
 
         <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
-Starting Chef Client, version 11.2.0</pre>
+Starting Chef Client, version 11.4.0
+<span class="muted">...</span>
+Chef Client finished, 14 resources updated</pre>
 
         <p>We'll cut the terminal output off there. Chef gives you comprehensive information about exactly what it's done. By default, the actions it's taken are displayed in green and when it updates a template it shows you what's changed.</p>
 
@@ -190,8 +194,8 @@ Starting Chef Client, version 11.2.0</pre>
 root@intro:~/chef-repo/cookbooks# knife cookbook site download mysql 
 Downloading mysql from the cookbooks site at version 2.1.2 to /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf mysql-2.1.2.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm mysql-2.1.2.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# tar zxf mysql*
+root@intro:~/chef-repo/cookbooks# rm mysql-*.tar.gz</pre>
 
         <p>So let's install MySQL then. We want to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
     
@@ -239,7 +243,7 @@ include_recipe "mysql::server"</strong>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
-Starting Chef Client, version 11.2.0
+Starting Chef Client, version 11.4.0
 Compiling Cookbooks...
 [2013-02-11T21:47:33+00:00] ERROR: Running exception handlers
 [2013-02-11T21:47:33+00:00] ERROR: Exception handlers complete
@@ -280,19 +284,19 @@ suggests "windows"</pre>
 root@intro:~/chef-repo/cookbooks# knife cookbook site download openssl
 Downloading openssl from the cookbooks site at version 1.0.0 to /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf openssl-1.0.0.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm openssl-1.0.0.tar.gz
+root@intro:~/chef-repo/cookbooks# tar zxf openssl*.tar.gz
+root@intro:~/chef-repo/cookbooks# rm openssl*.tar.gz
 root@intro:~/chef-repo/cookbooks# knife cookbook site download build-essential
 Downloading build-essential from the cookbooks site at version 1.3.4 to /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf build-essential-1.3.4.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm build-essential-1.3.4.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# tar zxf build-essential-*.tar.gz
+root@intro:~/chef-repo/cookbooks# rm build-essential-*.tar.gz</pre>
         
         <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
     
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd ..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
-Starting Chef Client, version 11.2.0
+Starting Chef Client, version 11.4.0
 Compiling Cookbooks...
 [2013-02-12T18:44:18+00:00] WARN: Cloning resource attributes for service[apache2] from prior resource (CHEF-3694)
 [2013-02-12T18:44:18+00:00] WARN: Previous service[apache2]: /root/chef-repo/cookbooks/apache2/recipes/default.rb:24:in `from_file'
@@ -309,7 +313,8 @@ Compiling Cookbooks...
         <p>Add the code in green. Let's re-run chef-solo.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json   
-...
+Starting Chef Client, version 11.4.0
+<span class="muted">...</span>
 Chef Client finished, 14 resources updated</pre>
 
         <p>Much more successful, we now have MySQL. Now to install PHP. You guessed it, there's a community cookbook for PHP.</p>
@@ -318,16 +323,16 @@ Chef Client finished, 14 resources updated</pre>
 root@intro:~/chef-repo/cookbooks# knife cookbook site download php
 Downloading php from the cookbooks site at version 1.1.8 to /root/chef-repo/cookbooks/php-1.1.8.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/php-1.1.8.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf php-1.1.8.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm php-1.1.8.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# tar zxf php*.tar.gz
+root@intro:~/chef-repo/cookbooks# rm php*.tar.gz</pre>
 
         <p>The php cookbook also depends on the xml cookbook, so let's grab that one.</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# knife cookbook site download xml
 Downloading xml from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf xml-1.1.2.tar.gz 
-root@intro:~/chef-repo/cookbooks# rm xml-1.1.2.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# tar zxf xml-*.tar.gz
+root@intro:~/chef-repo/cookbooks# rm xml-*.tar.gz</pre>
 
         <p>Next we add the new php cookbook as a dependency for our cookbook. Open phpapp/metadata.rb.</p>
 
@@ -365,7 +370,7 @@ include_recipe "apache2::mod_php5"</span></pre>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
-Starting Chef Client, version 11.2.0
+Starting Chef Client, version 11.4.0
 ...
 Chef Client finished, 8 resources updated</pre>
 
@@ -468,6 +473,8 @@ depends "database"</span></pre>
 
         <p>A resource is an action that your recipe can perform. The <strong>template</strong> resource creates a file by expanding variables in a template. The <strong>user</strong> resource can be used to manage users. Chef ships with many other useful resources, an overview of which can be found later in the chapter <em>Resources</em>. The database cookbook provides the resources <strong>mysql_database</strong> which we will now use to perform the first step.</p>
 
+        <p>Open phpapp/recipes/default.rb</p>
+
         <pre class="editor">#
 # Cookbook Name:: phpapp
 # Recipe:: default
@@ -483,8 +490,9 @@ include_recipe "mysql::server"
 include_recipe "php"
 include_recipe "php::module_mysql"
 include_recipe "apache2::mod_php5"
+<span class="code2add">include_recipe "mysql::ruby"
 
-<span class="code2add">mysql_database 'phpapp' do
+mysql_database 'phpapp' do
   connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
   action :create
 end</span></pre>
@@ -500,8 +508,7 @@ end</span></pre>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd ..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
-Starting Chef Client, version 11.2.0
-Compiling Cookbooks...</pre>
+Starting Chef Client, version 11.4.0</pre>
 
         <p>And that's failed. Let's look at the key parts of the message we received; highlighted bellow in yellow.</p>
         
@@ -531,9 +538,89 @@ Relevant File Content:
  20:  end
  21:</pre>
 
-        <p>The message <strong>undefined method `[]' for nil:NilClass</strong> is Ruby telling us that <strong>node['phpapp']['database']</strong> doesn't exist. We need to define it.</p>
+        <p>The message <strong>undefined method `[]' for nil:NilClass</strong> is Ruby telling us that the attribute <strong>node['phpapp']['database']</strong> doesn't exist. We need to define it.</p>
 
-        <p class="text-warning">*** Chapter to be completed ***</p>
+        <h3>Default attributes</h3>
+
+        <p>The missing database attribute can be defined in a few places. We could define the attribute in web.json like we did with the MySQL ones but that makes our cookbook unnecessarily difficult to use. We want to provide the option to use a database called something other than <strong>phpapp</strong> but we should really provide a default.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+    
+        <p>We now create called "attributes/default.rb". Open it in your editor.</p>
+
+        <pre class="editor"><span class="code2add">default["phpapp"]["database"] = "phpapp"</span></pre>
+
+        <p>Add the code in green and save the file.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+<span class="muted">...</span>
+Chef Client finished, 7 resources updated</pre>
+
+        <p>We've got a database! Let's create the database user.</p>
+
+        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+
+        <p>Open recipes/default.rb.</p>
+
+        <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"
+include_recipe "mysql::ruby"
+
+mysql_database node['phpapp']['database'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end
+
+<span class="code2add">mysql_database_user node['phpapp']['db_username'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  password node['phpapp']['db_password']
+  database_name node['phpapp']['database']
+  privileges [:select,:update,:insert,:create,:delete]
+  action :grant
+end</span></pre>
+
+    <p>Add the code in green. Save the file. We'll create a default value for our web application's mysql username but not for the password. That will need to be specified in web.json. Open attributes/default.rb</p>
+
+    <pre class="editor">default["phpapp"]["database"] = "phpapp"
+<span class="code2add">default["phpapp"]["db_username"] = "phpapp"</span></pre>
+
+    <p>Add the code in green. Save the file.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..</pre>
+
+    <p>Open web.json.</p>
+    
+    <pre class="editor">{
+  "mysql": {"server_root_password": "808052769e2c6d909027a2905b224bad", "server_debian_password": "569d1ed2d46870cc020fa87be83af98d", "server_repl_password": "476911180ee92a2ee5a471f33340f6f4"},
+  <span class="code2add">"phpapp": {"db_password": "212b09752d173876a84d374333ae1ffe"},</span>
+  "run_list": [ "recipe[phpapp]" ]
+}</pre>
+
+    <p>Add the code in green save the file.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+<span class="muted">...</span>
+Chef Client finished, 2 resources updated</pre>
+
+    <p>So we now have a MySQL database user for our app. Now to import from the initial data for our app.</p>
+
+    <p class="text-warning">*** Chapter to be completed ***</p>
+
     </div>
 
       <div id="push"></div>
