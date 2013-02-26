@@ -463,8 +463,8 @@ depends "database"</span></pre>
         <ol>
             <li>Create a MySQL database for our application</li>
             <li>Create a MySQL database user for our application</li>
-            <li>Import database schema and any initial data</li>
             <li>Fetch our web application code with Git</li>
+            <li>Import database schema and any initial data</li>
             <li>Create a configuration file with database details and other configuration options for our web application</li>
             <li>Create an Apache virtualhost for our web application</li>
         </ol>
@@ -593,12 +593,12 @@ end
   action :grant
 end</span></pre>
 
-    <p>Add the code in green. Save the file. We'll create a default value for our web application's mysql username but not for the password. That will need to be specified in web.json. Open attributes/default.rb</p>
+    <p>Add the code in green and save the file. We'll create a default value for our web application's mysql username but not for the password. That will need to be specified in web.json. Open attributes/default.rb</p>
 
     <pre class="editor">default["phpapp"]["database"] = "phpapp"
 <span class="code2add">default["phpapp"]["db_username"] = "phpapp"</span></pre>
 
-    <p>Add the code in green. Save the file.</p>
+    <p>Add the code in green and save the file.</p>
 
     <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..</pre>
 
@@ -610,14 +610,15 @@ end</span></pre>
   "run_list": [ "recipe[phpapp]" ]
 }</pre>
 
-    <p>Add the code in green save the file.</p>
+    <p>Add the code in green and save the file. Let's check our recipe still works.</p>
 
     <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 2 resources updated</pre>
 
-    <p>So we now have a MySQL database user for our app. Now to import from the initial data for our app.</p>
+    <p>So we now have a MySQL database user for our app. Now we need to fetch our code.</p>
+
 
     <p class="text-warning">*** Chapter to be completed ***</p>
 
