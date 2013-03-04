@@ -55,9 +55,7 @@
 
         <p>There are more than few providers of cloud instances but we favour Rackspace, <a href="http://www.kqzyfj.com/click-7055226-11244330?url=http%3A%2F%2Fwww.rackspace.co.uk%2Fcloud-servers%2F" target="_blank">sign up to Rackspace</a><img src="http://www.ftjcfx.com/image-7055226-11244330" width="1" height="1" border="0"/> and we'll get some affiliate revenue that will help fund our writing of future guides.</p>
 
-        <p>Once you've signed up, fire up an Ubuntu instance.</p>
-
-        <p>Of course you can install Ubuntu in a virtual machine if preferred. If you do, create a snapshot now so we can re-use a fresh installation for later examples.</p>
+        <p>Once you've signed up, fire up an Ubuntu instance. Alternatively, you can install Ubuntu in a virtual machine if preferred. If you do, create a snapshot now so we can re-use a fresh installation for later examples.</p>
 
         <h3>Installing Chef</h3>
 
@@ -624,6 +622,13 @@ Chef Client finished, 2 resources updated</pre>
     <p>So we now have a MySQL database user for our app. Now we need to fetch our code. We'll be setting up an instance of <a href="http://croogo.org/">Croogo</a>, a CakePHP powered Content Management System.</p>
 
 
+
+
+git "/opt/mysources/couch" do
+  repository "git://git.apache.org/couchdb.git"
+  reference "master"
+  action :sync
+end
 
 
 
