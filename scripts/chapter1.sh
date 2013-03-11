@@ -278,3 +278,26 @@ echo "default[\"phpapp\"][\"path\"] = \"/var/www/croogo\"" >> attributes/default
 
 cd ../..
 chef-solo -c solo.rb -j web.json
+
+cd cookbooks/phpapp
+
+echo "
+execute 'import croogo structure' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' < ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    m.list_tables.include?('acos')
+  end
+end" >> recipes/default.rb
+
+cd ../..
+chef-solo -c solo.rb -j web.json
+
+chef-solo -c solo.rb -j web.json

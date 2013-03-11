@@ -37,7 +37,9 @@
           <p class="lead">Learn how to configure, manage and provision cloud servers with Chef by following practical examples with real world applications.</p>
         </div>
 
-        <p>Starting with Chef can be difficult. There are a few tricky concepts to grasp and some new terminology to learn. This work in progress book gradually introduces you to Chef without throwing you in at the deep end. You'll be shown how to configure servers with practical examples for applications large and small.</p>
+        <p>Taking your first steps with Chef can be daunting. After completing each chapter of this book you will end up with a working example of a Chef setup that you understand. Concepts and best practices are explained by example so you'll know how to customise the code in the book for your own needs.</p>
+
+        <p>The book starts with the simplest way to use Chef and slowly introduces each new concept with examples. You'll understand how to overcome common problems before you encounter them and by the final chapter you will be equipped with all the tools required to manage even the most complicated cloud infrastructure.</p>
 
         <p>If you find any issues with this book or have any suggestions of things you'd like to change please submit an issue or pull request over at our <a href="https://github.com/hellofuture/gettingstartedwithchef">Github page</a>.
 
@@ -52,7 +54,7 @@
 
         <p>The simplest way to use Chef is <strong>chef-solo</strong>. It allows you to install, configure and manage the packages required by your application without the complication of any client and server configuration. We'll start with the common scenario that you're a website developer that wants to deploy your new PHP application to a cloud web server.</p>
 
-        <p>Every time you have to setup a web server you have to remember loads of installation commands, edit configuration files and generally you always forget how to do something and it takes ages. Wouldn't it be nice if this was all entirely automated? With Chef we can keep our infrastructure as code alongside our applications.</p>
+        <p>Every time you have to setup a web server you have to remember lots of installation commands, edit configuration files and generally you always forget how to do something and it takes ages. Wouldn't it be nice if this was all entirely automated? With Chef we can keep our infrastructure as code alongside our applications.</p>
 
         <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of Ubuntu.</p> 
 
@@ -720,9 +722,102 @@ Starting Chef Client, version 11.4.0
 ...
 Chef Client finished, 4 resources updated</pre>
 
-    <p>Good. We've got the code. Now we need to setup our database.</p>
+    <p>Good. We've got the code. Now we need to setup our database schema.</p>
 
-    
+    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+
+    <p>Open recipes/default.rb in your text editor.</p>
+
+    <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"
+include_recipe "mysql::ruby"
+include_recipe "git"
+
+apache_site "default" do
+  enable true
+end
+
+mysql_database node['phpapp']['database'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end
+
+mysql_database_user node['phpapp']['db_username'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  password node['phpapp']['db_password']
+  database_name node['phpapp']['database']
+  privileges [:select,:update,:insert,:create,:delete]
+  action :grant
+end
+
+directory node['phpapp']['path']  do
+  owner "www-data"
+  group "www-data" 
+  mode "0775"
+  recursive true
+  action :create
+end
+
+git node['phpapp']['path'] do
+  repository "git://github.com/hellofuture/exampleapp.git"
+  reference "master"
+  action :sync
+end
+
+<span class="code2add">execute 'import croogo structure' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' &lt; ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    m.list_tables.include?('acos')
+  end
+end</span>
+</pre>
+
+    <p>Add the code in green. Notice the <strong>not_if do</strong> section in the code we've added. This stops us reimporting the database every time the recipe is run. Without this we could lose our data if we run the recipe once our application has been used for a while. The not_if section ensures our recipe is idempotent. Save the file and we can see it in action.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+...
+Chef Client finished, 7 resources updated</pre>
+
+    <p>As the cookbook runs look for the following:</p>
+
+     <pre class="terminal">    * execute[import croogo structure] action run
+      <span class="action">- execute mysql -u root --password=808052769e2c6d909027a2905b224bad phpapp < /var/www/croogo/app/Config/Schema/sql/croogo.sql</span></pre>
+
+    <p>This tells us we've imported the database structure into MySQL. Let's run chef-solo again to ensure our recipe is actually idempotent.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+...
+Chef Client finished, 6 resources updated</pre>
+
+    <p>This time we see something different:</p>
+
+    <pre class="terminal">  * execute[import croogo structure] action run (skipped due to not_if)</pre>
+
+    <p>Excellent, that's worked! Because the database structure is already imported our recipe does not try to import it again.</p>
 
 
     <p class="text-warning">*** Chapter to be completed ***</p>
@@ -735,7 +830,6 @@ Chef Client finished, 4 resources updated</pre>
     <div id="footer">
       <div class="container">
         <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 8378526<br />
-          Licensed under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.</p>
       </div>
     </div>
 
