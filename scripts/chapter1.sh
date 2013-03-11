@@ -274,8 +274,7 @@ git node['phpapp']['path'] do
   action :sync
 end" > recipes/default.rb
 
-echo "default[\"phpapp\"][\"path\"] = \"/var/www/croogo\"" > attributes/default.rb
+echo "default[\"phpapp\"][\"path\"] = \"/var/www/croogo\"" >> attributes/default.rb
 
 cd ../..
 chef-solo -c solo.rb -j web.json
-
