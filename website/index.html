@@ -793,7 +793,7 @@ end
 end</span>
 </pre>
 
-    <p>Add the code in green. Notice the <strong>not_if do</strong> section in the code we've added. This stops us reimporting the database every time the recipe is run. Without this we could lose our data if we run the recipe once our application has been used for a while. The not_if section ensures our recipe is idempotent. Save the file and we can see it in action.</p>
+    <p>Add the code in green. Notice the <strong>not_if do</strong> section in the code we've added. It checks to see if one of the tables contained in our database schema exists and doesn't import the schema if that's the case. This stops us reimporting the database every time the recipe is run. Without this we could lose our data if we run the recipe once our application has been used for a while. The not_if section ensures our recipe is idempotent. Save the file and we can see it in action.</p>
 
     <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
@@ -829,7 +829,7 @@ Chef Client finished, 6 resources updated</pre>
 
     <div id="footer">
       <div class="container">
-        <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 8378526<br />
+        <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 08378526<br />
       </div>
     </div>
 
