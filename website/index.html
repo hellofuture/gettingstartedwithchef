@@ -41,6 +41,8 @@
 
         <p>The book starts with the simplest way to use Chef and slowly introduces each new concept with examples. You'll understand how to overcome common problems before you encounter them and by the final chapter you will be equipped with all the tools required to manage even the most complicated cloud infrastructure.</p>
 
+        <p>This book tries to avoid <em>magic</em> and explains what each Chef example does so you'll understand exactly what is causing Chef to do whatever it is that it's doing.</p>
+
         <p>If you find any issues with this book or have any suggestions of things you'd like to change please submit an issue or pull request over at our <a href="https://github.com/hellofuture/gettingstartedwithchef">Github page</a>.
 
         <h2>1. Introducing Chef</h2>
@@ -817,8 +819,259 @@ Chef Client finished, 6 resources updated</pre>
 
     <pre class="terminal">  * execute[import croogo structure] action run (skipped due to not_if)</pre>
 
-    <p>Excellent, that's worked! Because the database structure is already imported our recipe does not try to import it again.</p>
+    <p>Excellent, that's worked! Because the database structure is already imported our recipe does not try to import it again. As well as the structure we also need to import some static data.</p>
 
+    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+
+    <p>Open recipes/default.rb up in your text editor again.</p>
+
+    <pre class="editor">#
+#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"
+include_recipe "mysql::ruby"
+include_recipe "git"
+
+apache_site "default" do
+  enable true
+end
+
+mysql_database node['phpapp']['database'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end
+
+mysql_database_user node['phpapp']['db_username'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  password node['phpapp']['db_password']
+  database_name node['phpapp']['database']
+  privileges [:select,:update,:insert,:create,:delete]
+  action :grant
+end
+
+directory node['phpapp']['path']  do
+  owner "www-data"
+  group "www-data" 
+  mode "0775"
+  recursive true
+  action :create
+end
+
+git node['phpapp']['path'] do
+  repository "git://github.com/hellofuture/exampleapp.git"
+  reference "master"
+  action :sync
+end
+
+execute 'import croogo structure' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' &lt; ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    m.list_tables.include?('acos')
+  end
+end
+
+<span class="code2add">execute 'import croogo static data' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' &lt; ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo_data.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    begin
+      m.query("select count(*) from acos").fetch_row.first.to_i > 0
+    ensure
+      m.close
+    end
+  end
+end</span></pre>
+
+    <p>Add the code in green. As you can see in the <strong>no_if do</strong> we're checking that the table acos is not empty to ensure our recipe is idempotent. Save the file and let's run chef-solo again.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+...
+Chef Client finished, 7 resources updated</pre>
+
+    <p>Again, let's check to ensure the static data has been loaded.</p>
+
+    <pre class="terminal">    * execute[import croogo static data] action run
+      <span class="action">- execute mysql -u root --password=808052769e2c6d909027a2905b224bad phpapp < /var/www/croogo/app/Config/Schema/sql/croogo_data.sql</span></pre>
+
+    <p>We'll run chef-solo again to ensure our recipe is idempotent.</p>
+
+    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+...
+Chef Client finished, 6 resources updated</pre>
+
+    <p>This time we see that our static data isn't imported again so I recipe remains idempotent.</p>
+
+    <pre class="terminal">* execute[import croogo static data] action run (skipped due to not_if)</pre>
+
+    <p>So that's worked successfully. Now we need to create a database configuration for our application. This will tell the web application which MySQL user, password, host and database name to use. Croogo comes with an example configuration file which we will use to create our template.</p>
+
+    <h3>Templates</h3>
+
+    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp
+root@intro:~/chef-repo/cookbooks/phpapp# cp /var/www/croogo/app/Config/database.php.install templates/default/database.php.erb</pre>
+    
+    <p>Open templates/default/database.php.erb in your text editor. 
+
+    <pre class="editor">&lt;?php
+class DATABASE_CONFIG {
+
+    public $default = array(
+        <span class="code2add">'datasource' => 'mysqli',
+        'persistent' => false,
+        'host' => 'localhost',
+        'login' => '&lt;%= @user %&gt;',
+        'password' => '&lt;%= @password %&gt;',
+        'database' => '&lt;%= @database %&gt;',
+        'prefix' => '',
+        'encoding' => 'UTF8'</span>
+    );
+
+    public $test = array(
+        'datasource' => 'Database/Mysql',
+        'persistent' => false,
+        'host' => 'localhost',
+        'login' => 'user',
+        'password' => 'password',
+        'database' => 'test_database_name',
+        'prefix' => '',
+        'encoding' => 'UTF8',
+    );
+}</pre>
+
+    <p>Change the code in green and save the file. Open up recipes/default.rb.</p>
+
+    <pre class="editor">#
+#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe "apache2"
+include_recipe "mysql::client"
+include_recipe "mysql::server"
+include_recipe "php"
+include_recipe "php::module_mysql"
+include_recipe "apache2::mod_php5"
+include_recipe "mysql::ruby"
+include_recipe "git"
+
+apache_site "default" do
+  enable true
+end
+
+mysql_database node['phpapp']['database'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  action :create
+end
+
+mysql_database_user node['phpapp']['db_username'] do
+  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+  password node['phpapp']['db_password']
+  database_name node['phpapp']['database']
+  privileges [:select,:update,:insert,:create,:delete]
+  action :grant
+end
+
+directory node['phpapp']['path']  do
+  owner "www-data"
+  group "www-data" 
+  mode "0775"
+  recursive true
+  action :create
+end
+
+git node['phpapp']['path'] do
+  repository "git://github.com/hellofuture/exampleapp.git"
+  reference "master"
+  action :sync
+end
+
+execute 'import croogo structure' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' &lt; ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    m.list_tables.include?('acos')
+  end
+end
+
+execute 'import croogo static data' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' &lt; ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo_data.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    begin
+      m.query("select count(*) from acos").fetch_row.first.to_i > 0
+    ensure
+      m.close
+    end
+  end
+end
+
+<span class="code2add">template node['phpapp']['path'] + '/app/Config/database.php' do
+  source "database.php.erb"
+  mode 0755
+  owner "root"
+  group "root"
+  variables(
+    :database        => node['phpapp']['database'],
+    :user            => node['phpapp']['db_username'],
+    :password        => node['phpapp']['db_username'])
+end</span></pre>
+
+    <p>You'll notice we're using a new resource called <strong>template</strong>. It expands templates from erb files. The variables bit allows us to pass attributes to the template as variables so we can reuse templates easier across cookbooks. Instead of using <strong>node['phpapp']['database']</strong> we can use <strong>@database</strong> in the template.</p> 
+
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
+root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+...
+Chef Client finished, 8 resources updated</pre>
 
     <p class="text-warning">*** Chapter to be completed ***</p>
 

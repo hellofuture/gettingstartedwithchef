@@ -301,3 +301,73 @@ cd ../..
 chef-solo -c solo.rb -j web.json
 
 chef-solo -c solo.rb -j web.json
+
+cd cookbooks/phpapp
+
+echo "
+execute 'import croogo static data' do
+  command 'mysql -u root --password=' + 
+          node['mysql']['server_root_password'] + ' ' +
+          node['phpapp']['database'] + ' < ' +
+          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo_data.sql'
+  not_if do
+    require 'mysql'
+    m = Mysql.new('localhost',
+                  'root', 
+                  node['mysql']['server_root_password'], 
+                  node['phpapp']['database'])     
+    begin
+      m.query(\"select count(*) from acos\").fetch_row.first.to_i > 0
+    ensure
+      m.close
+    end
+  end
+end"  >> recipes/default.rb
+
+cd ../..
+chef-solo -c solo.rb -j web.json
+
+chef-solo -c solo.rb -j web.json
+
+cd cookbooks/php
+
+echo "<?php
+class DATABASE_CONFIG {
+
+    public $default = array(
+        'datasource' => 'mysqli',
+        'persistent' => false,
+        'host' => 'localhost',
+        'login' => '<%= @user %>',
+        'password' => '<%= @password %>',
+        'database' => '<%= @database %>',
+        'prefix' => '',
+        'encoding' => 'UTF8'
+    );
+
+    public $test = array(
+        'datasource' => 'Database/Mysql',
+        'persistent' => false,
+        'host' => 'localhost',
+        'login' => 'user',
+        'password' => 'password',
+        'database' => 'test_database_name',
+        'prefix' => '',
+        'encoding' => 'UTF8',
+    );
+}" > templates/default/database.php.erb
+
+echo "
+template node['phpapp']['path'] + '/app/Config/database.php' do
+  source \"database.php.erb\"
+  mode 0755
+  owner \"root\"
+  group \"root\"
+  variables(
+    :database        => node['phpapp']['database'],
+    :user            => node['phpapp']['db_username'],
+    :password        => node['phpapp']['db_username'])
+end" >> recipes/default.rb
+
+cd ../..
+chef-solo -c solo.rb -j web.json
