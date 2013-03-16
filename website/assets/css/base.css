@@ -84,6 +84,11 @@ p {
   font-weight: bold;
 }
 
+
+.code2remove {
+  color: red;
+}
+
 .code2change {
   color: blue;
 }
