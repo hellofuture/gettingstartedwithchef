@@ -48,11 +48,6 @@
 
         <h2>1. Introducing Chef</h2>
 
-        <div class="alert alert-error">
-            <strong>Hello visitor! Google must have found us! </strong><br>
-            This is a work in progress book so please excuse any errors or typos. Although everything should work the first chapter is not yet complete and the example chef setup described could change.
-        </div>
-
         <p>In the first chapter we'll introduce you to Chef and we'll be working over a SSH connection. There are better ways to work with Chef and we'll get to them in later chapters but things will be kept as simple as possible to start with.</p>
 
         <p>The simplest way to use Chef is <strong>chef-solo</strong>. It allows you to install, configure and manage the packages required by your application without the complication of any client and server configuration. We'll start with the common scenario that you have to setup a website designer with a Wordpress environment.</p>
@@ -69,7 +64,7 @@
 
         <p>SSH to your vanilla Ubuntu box and run the following command to install Chef. This used to be a more involved process but thanks to the new omnibus installer it couldn't be simpler.</p>
 
-        <pre class="terminal">root@intro:~# sudo true &amp;&amp; curl -L https://www.opscode.com/chef/install.sh | sudo bash
+        <pre class="terminal">root@intro:~# curl -L https://www.opscode.com/chef/install.sh | bash
 Thank you for installing Chef!</pre>
 
         <p>Confirm Chef has successfully installed.</p>
@@ -974,9 +969,35 @@ Chef Client finished, 11 resources updated</pre>
 
     <h3>A new server</h3>
 
-    <p>Now use the Rackspace Cloud Control Panel or your virtual machine software to re-image your Ubuntu box.</p>
+    <p>Now use the Rackspace Cloud Control Panel or your virtual machine software to create a new Ubuntu box.</p>
 
+    <p>SSH into your box. We now only need to go through a few steps to create a server .</p>
 
+    <ol>
+        <li>Install Chef</li>
+        <li>Copy our Chef Repository over</li>
+        <li>Run chef-solo.</li>
+    </ol>
+    
+    <pre class="terminal">root@intro:~# curl -L https://www.opscode.com/chef/install.sh | bash
+root@intro:~# wget http://gettingstartedwithchef.com/downloads/cp1.tgz
+root@intro:~# tar zxf cp1.tgz
+root@intro:~# cd chef-repo</pre>
+
+    <p>Add this point edit web.json and enter your server name again if required. Now run chef-solo.</p>
+
+     <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+Starting Chef Client, version 11.4.0
+<span class="muted">...</span>
+Chef Client finished, 57 resources updated</pre>
+    
+    <p>Exciting, let's check to see if we can access our Wordpress site!</p>
+
+    <p><img class="img-rounded" src="assets/img/hello-wordpress.png" /></p>
+
+    <p>So that's worked. We can now setup a Wordpress install with just a few commands! In the next chapter we'll show you how set setup cloud servers with one command and introduce better ways of working with Chef.</p>
+
+    </div>
 
     </div>
 
@@ -986,6 +1007,7 @@ Chef Client finished, 11 resources updated</pre>
     <div id="footer">
       <div class="container">
         <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 08378526<br />
+        Created with <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> and <a href="http://bootswatch.com/cerulean/" target="_blank">Bootswatch Cerulean.</a></p>
       </div>
     </div>
 
