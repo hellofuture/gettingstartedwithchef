@@ -112,18 +112,6 @@ echo "<?php phpinfo(); ?>" > /var/www/test.php
 rm /var/www/test.php
 
 cd cookbooks
-knife cookbook site download git
-tar zxf git-*.tar.gz
-knife cookbook site download windows
-tar zxf windows-*.tar.gz
-knife cookbook site download dmg
-tar zxf dmg-*.tar.gz
-knife cookbook site download runit
-tar zxf runit-*.tar.gz
-knife cookbook site download chef_handler
-tar zxf chef_handler-*.tar.gz
-knife cookbook site download yum
-tar zxf yum-*.tar.gz
 knife cookbook site download database
 tar zxf database-*.tar.gz
 knife cookbook site download postgresql
@@ -136,8 +124,7 @@ rm *.tar.gz
 
 cd phpapp
 
-echo "depends \"git\"
-depends \"database\"" >> metadata.rb
+echo "depends \"database\"" >> metadata.rb
 
 echo "#
 # Cookbook Name:: phpapp
@@ -176,7 +163,7 @@ cd ../..
 chef-solo -c solo.rb -j web.json
 
 cd cookbooks/phpapp
-dT9LLecu9Bwi
+
 echo "#
 # Cookbook Name:: phpapp
 # Recipe:: default
@@ -223,168 +210,100 @@ echo "{
 
 chef-solo -c solo.rb -j web.json
 
-cd cookbooks/phpapp
-
-echo "#
-# Cookbook Name:: phpapp
-# Recipe:: default
-#
-# Copyright 2013, YOUR_COMPANY_NAME
-#
-# All rights reserved - Do Not Redistribute
-#
-
-include_recipe \"apache2\"
-include_recipe \"mysql::client\"
-include_recipe \"mysql::server\"
-include_recipe \"php\"
-include_recipe \"php::module_mysql\"
-include_recipe \"apache2::mod_php5\"
-include_recipe \"mysql::ruby\"
-include_recipe \"git\"
-
-apache_site \"default\" do
-  enable true
-end
-
-mysql_database node['phpapp']['database'] do
-  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
-  action :create
-end
-
-mysql_database_user node['phpapp']['db_username'] do
-  connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
-  password node['phpapp']['db_password']
-  database_name node['phpapp']['database']
-  privileges [:select,:update,:insert,:create,:delete]
-  action :grant
-end
-
-directory node['phpapp']['path']  do
-  owner \"www-data\"
-  group \"www-data\" 
-  mode \"0775\"
-  recursive true
-  action :create
-end
-
-git node['phpapp']['path'] do
-  repository \"git://github.com/hellofuture/exampleapp.git\"
-  reference \"master\"
-  action :sync
-end" > recipes/default.rb
-
-echo "default[\"phpapp\"][\"path\"] = \"/var/www/croogo\"" >> attributes/default.rb
-
-cd ../..
-chef-solo -c solo.rb -j web.json
+# Fetching Wordpress
 
 cd cookbooks/phpapp
 
 echo "
-execute 'import croogo structure' do
-  command 'mysql -u root --password=' + 
-          node['mysql']['server_root_password'] + ' ' +
-          node['phpapp']['database'] + ' < ' +
-          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
-  not_if do
-    require 'mysql'
-    m = Mysql.new('localhost',
-                  'root', 
-                  node['mysql']['server_root_password'], 
-                  node['phpapp']['database'])     
-    m.list_tables.include?('acos')
-  end
+wordpress_latest = Chef::Config[:file_cache_path] + '/wordpress-latest.tar.gz'
+
+remote_file wordpress_latest do
+  source 'http://wordpress.org/latest.tar.gz'
+  mode 0644
+end
+
+directory node['phpapp']['path'] do
+  owner 'root'
+  group 'root'
+  mode 0755
+  action :create
+  recursive true
+end
+
+execute 'untar-wordpress' do
+  cwd node['phpapp']['path']
+  command 'tar --strip-components 1 -xzf ' + wordpress_latest
+  creates node['phpapp']['path'] + '/wp-settings.php'
 end" >> recipes/default.rb
 
+echo "default['phpapp']['path'] = '/var/www/phpapp'" >> attributes/default.rb
+
 cd ../..
 chef-solo -c solo.rb -j web.json
 
+ls /var/www/phpapp
+
 chef-solo -c solo.rb -j web.json
+
+# Templates
 
 cd cookbooks/phpapp
 
 echo "
-execute 'import croogo static data' do
-  command 'mysql -u root --password=' + 
-          node['mysql']['server_root_password'] + ' ' +
-          node['phpapp']['database'] + ' < ' +
-          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo_data.sql'
-  not_if do
-    require 'mysql'
-    m = Mysql.new('localhost',
-                  'root', 
-                  node['mysql']['server_root_password'], 
-                  node['phpapp']['database'])     
-    begin
-      m.query(\"select count(*) from acos\").fetch_row.first.to_i > 0
-    ensure
-      m.close
-    end
-  end
-end"  >> recipes/default.rb
+wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
 
-cd ../..
-chef-solo -c solo.rb -j web.json
-
-chef-solo -c solo.rb -j web.json
-
-cd cookbooks/php
+remote_file wp_secrets do
+  source 'https://api.wordpress.org/secret-key/1.1/salt/'
+  action :create_if_missing
+  mode 0644
+end" >> recipes/default.rb
 
 echo "<?php
-class DATABASE_CONFIG {
 
-    public \$default = array(
-        'datasource' => 'Database/Mysql',
-        'persistent' => false,
-        'host' => 'localhost',
-        'login' => '<%= @user %>',
-        'password' => '<%= @password %>',
-        'database' => '<%= @database %>',
-        'prefix' => '',
-        'encoding' => 'UTF8'
-    );
+define('DB_NAME', '<%= @database %>');
+define('DB_USER', '<%= @user %>');
+define('DB_PASSWORD', '<%= @password %>');
+define('DB_HOST', 'localhost');
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
 
-    public \$test = array(
-        'datasource' => 'Database/Mysql',
-        'persistent' => false,
-        'host' => 'localhost',
-        'login' => 'user',
-        'password' => 'password',
-        'database' => 'test_database_name',
-        'prefix' => '',
-        'encoding' => 'UTF8',
-    );
-}" > templates/default/database.php.erb
+<%= @wp_secrets %>
 
-echo "
-template node['phpapp']['path'] + '/app/Config/database.php' do
-  source \"database.php.erb\"
+\$table_prefix  = 'wp_';
+
+define('WPLANG', '');
+define('WP_DEBUG', false);
+
+if ( !defined('ABSPATH') )
+    define('ABSPATH', dirname(__FILE__) . '/');
+
+require_once(ABSPATH . 'wp-settings.php');" > templates/default/wp-config.php.erb
+
+echo "salt_data = ''
+
+ruby_block 'fetch-salt-data' do
+  block do
+    salt_data = File.read(wp_secrets)
+  end
+  action :create
+end
+
+template node['phpapp']['path'] + '/wp-config.php' do
+  source 'wp-config.php.erb'
   mode 0755
-  owner \"root\"
-  group \"root\"
+  owner 'root'
+  group 'root'
   variables(
     :database        => node['phpapp']['database'],
     :user            => node['phpapp']['db_username'],
-    :password        => node['phpapp']['db_username'])
+    :password        => node['phpapp']['db_password'],
+    :wp_secrets      => salt_data)
 end" >> recipes/default.rb
 
 cd ../..
 chef-solo -c solo.rb -j web.json
 
-cd cookbooks/phpapp
-cp /var/www/croogo/app/Config/croogo.php.install templates/default/croogo.php.erb
-
-echo "
-template node['phpapp']['path'] + '/app/Config/croogo.php' do
-  source \"croogo.php.erb\"
-  mode 0755
-  owner \"root\"
-  group \"root\"
-end" >> recipes/default.rb
-
-cd ../..
-chef-solo -c solo.rb -j web.json
+# Creating an Apache VirtualHost
 
 cd cookbooks/phpapp
 
@@ -407,10 +326,8 @@ echo "# Auto generated by Chef. Changes will be overwritten.
     AllowOverride None
   </Directory>
 
-  LogLevel info
-  ErrorLog <%= @params[:docroot] %>/error.log
-  CustomLog <%= @params[:docroot] %>/access.log combined
 </VirtualHost>" > templates/default/site.conf.erb
+
 
 echo "#
 # Cookbook Name:: phpapp
@@ -428,7 +345,6 @@ include_recipe \"php\"
 include_recipe \"php::module_mysql\"
 include_recipe \"apache2::mod_php5\"
 include_recipe \"mysql::ruby\"
-include_recipe \"git\"
 
 apache_site \"default\" do
   enable false
@@ -447,79 +363,63 @@ mysql_database_user node['phpapp']['db_username'] do
   action :grant
 end
 
-directory node['phpapp']['path']  do
-  owner \"www-data\"
-  group \"www-data\" 
-  mode \"0775\"
+wordpress_latest = Chef::Config[:file_cache_path] + '/wordpress-latest.tar.gz'
+
+remote_file wordpress_latest do
+  source 'http://wordpress.org/latest.tar.gz'
+  mode 0644
+end
+
+directory node['phpapp']['path'] do
+  owner 'root'
+  group 'root'
+  mode 0755
+  action :create
   recursive true
+end
+
+execute 'untar-wordpress' do
+  cwd node['phpapp']['path']
+  command 'tar --strip-components 1 -xzf ' + wordpress_latest
+  creates node['phpapp']['path'] + '/wp-settings.php'
+end
+
+wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
+
+remote_file wp_secrets do
+  source 'https://api.wordpress.org/secret-key/1.1/salt/'
+  action :create_if_missing
+  mode 0644
+end
+
+salt_data = ''
+
+ruby_block 'fetch-salt-data' do
+  block do
+    salt_data = File.read(wp_secrets)
+  end
   action :create
 end
 
-git node['phpapp']['path'] do
-  repository \"git://github.com/hellofuture/exampleapp.git\"
-  reference \"master\"
-  action :sync
-end
-
-execute 'import croogo structure' do
-  command 'mysql -u root --password=' + 
-          node['mysql']['server_root_password'] + ' ' +
-          node['phpapp']['database'] + ' < ' +
-          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo.sql'
-  not_if do
-    require 'mysql'
-    m = Mysql.new('localhost',
-                  'root', 
-                  node['mysql']['server_root_password'], 
-                  node['phpapp']['database'])     
-    m.list_tables.include?('acos')
-  end
-end
-
-execute 'import croogo static data' do
-  command 'mysql -u root --password=' + 
-          node['mysql']['server_root_password'] + ' ' +
-          node['phpapp']['database'] + ' < ' +
-          node['phpapp']['path'] + '/app/Config/Schema/sql/croogo_data.sql'
-  not_if do
-    require 'mysql'
-    m = Mysql.new('localhost',
-                  'root', 
-                  node['mysql']['server_root_password'], 
-                  node['phpapp']['database'])     
-    begin
-      m.query(\"select count(*) from acos\").fetch_row.first.to_i > 0
-    ensure
-      m.close
-    end
-  end
-end
-
-template node['phpapp']['path'] + '/app/Config/database.php' do
-  source \"database.php.erb\"
+template node['phpapp']['path'] + '/wp-config.php' do
+  source 'wp-config.php.erb'
   mode 0755
-  owner \"root\"
-  group \"root\"
+  owner 'root'
+  group 'root'
   variables(
     :database        => node['phpapp']['database'],
     :user            => node['phpapp']['db_username'],
-    :password        => node['phpapp']['db_username'])
+    :password        => node['phpapp']['db_password'],
+    :wp_secrets      => salt_data)
 end
 
-template node['phpapp']['path'] + '/app/Config/croogo.php' do
-  source \"croogo.php.erb\"
-  mode 0755
-  owner \"root\"
-  group \"root\"
-end
-
-web_app \"phpapp\" do
-  template \"site.conf.erb\"
-  docroot node['phpapp']['path'] + '/app/webroot'
+web_app 'phpapp' do
+  template 'site.conf.erb'
+  docroot node['phpapp']['path']
   server_name node['phpapp']['server_name']
 end" > recipes/default.rb
 
-echo "default['phpapp']['server_name'] = \"phpapp\"" >> attributes/default.rb
+echo "default['phpapp']['server_name'] = 'phpapp'" >> attributes/default.rb
 
 cd ../..
 
