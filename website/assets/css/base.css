@@ -13,7 +13,7 @@ body {
   height: auto !important;
   height: 100%;
   /* Negative indent footer by it's height */
-  margin: 0 auto -60px;
+  margin: 0 auto -80px;
 }
 
 /* Set the fixed height of the footer here */
@@ -22,7 +22,7 @@ body {
   height: 80px;
 }
 #footer {
-  background-color: #f5f5f5;
+  background-color: #f0f0f0;
 }
 
 /* Lastly, apply responsive CSS fixes as necessary */
@@ -36,7 +36,8 @@ body {
 }
 
 #footer p {
-  margin-bottom: 10px;
+  margin-left: 90px; 
+  margin-bottom: 20px;
 }
 
 p {
@@ -97,6 +98,11 @@ p {
   font-weight: bold;
   color: yellow;
 }
+
+#footer .container {
+  background: url(../img/hellovsmall.png) 0 10px no-repeat;
+}
+
 
 /* Custom page CSS
 -------------------------------------------------- */
