@@ -779,7 +779,7 @@ template node['phpapp']['path'] + '/wp-config.php' do
     :wp_secrets      => salt_data)
 end</span></pre>
 
-    <p>In order to include the randoms strings from the file we generated earlier, we've introduced another resource here called <a href="http://docs.opscode.com/resource_ruby_block.html" target="_black">ruby_block</a>. It ensures our Ruby code executes at the same time as the rest of the resources in our recipe. Without it, Chef would execute the Ruby code that reads wp-secrets.php before the wp-secrets.php file is created.</p>
+    <p>In order to include the random strings from the file we generated earlier, we've introduced another resource here called <a href="http://docs.opscode.com/resource_ruby_block.html" target="_black">ruby_block</a>. It ensures our Ruby code executes at the same time as the rest of the resources in our recipe. Without it, Chef would execute the Ruby code that reads wp-secrets.php before the wp-secrets.php file is created.</p>
 
     <p>We use the <strong>variables</strong> attribute of the <strong>template</strong> resource to specify which attribute each variable in our template should correspond to. While not entirely necessary this extra bit of code does decouple our template from our recipe.</p>
 
