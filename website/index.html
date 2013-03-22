@@ -462,7 +462,7 @@ depends "php"
 
         <h3>Resources</h3>
 
-        <p>A resource is an action that your recipe can perform. The <strong>template</strong> resource creates a file by expanding variables in a template. The <strong>user</strong> resource can be used to manage users. Chef ships with many other useful resources, an overview of which can be found later in the chapter <em>Resources</em>. The database cookbook provides the resource <strong>mysql_database</strong> which we will now use to perform the first step.</p>
+        <p>A resource is an action that your recipe can perform. The <strong>template</strong> resource creates a file by expanding variables in a template. The <strong>user</strong> resource can be used to manage users. Chef ships with many other useful resources, an overview of which can be found later in the chapter <em>Resources</em>. The database cookbook provides the resources <strong>mysql_database</strong> which we will now use to perform the first step.</p>
 
         <p>Open recipes/default.rb</p>
 
@@ -541,7 +541,7 @@ Relevant File Content:
 
         <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
     
-        <p>Create a file called attributes/default.rb in your editor.</p>
+        <p>We now create called "attributes/default.rb". Open it in your editor.</p>
 
         <pre class="editor"><span class="code2add">default["phpapp"]["database"] = "phpapp"</span></pre>
 
@@ -779,7 +779,7 @@ template node['phpapp']['path'] + '/wp-config.php' do
     :wp_secrets      => salt_data)
 end</span></pre>
 
-    <p>In order to include the random strings from the file we generated earlier, we've introduced another resource here called <a href="http://docs.opscode.com/resource_ruby_block.html" target="_black">ruby_block</a>. It ensures our Ruby code executes at the same time as the rest of the resources in our recipe. Without it, Chef would execute the Ruby code that reads wp-secrets.php before the wp-secrets.php file is created.</p>
+    <p>In order to include the randoms strings from the file we generated earlier, we've introduced another resource here called <a href="http://docs.opscode.com/resource_ruby_block.html" target="_black">ruby_block</a>. It ensures our Ruby code executes at the same time as the rest of the resources in our recipe. Without it, Chef would execute the Ruby code that reads wp-secrets.php before the wp-secrets.php file is created.</p>
 
     <p>We use the <strong>variables</strong> attribute of the <strong>template</strong> resource to specify which attribute each variable in our template should correspond to. While not entirely necessary this extra bit of code does decouple our template from our recipe.</p>
 
@@ -969,7 +969,7 @@ Chef Client finished, 11 resources updated</pre>
 
     <p>Now use the Rackspace Cloud Control Panel or your virtual machine software to create a new Ubuntu box.</p>
 
-    <p>SSH into your box. We now only need to go through a few steps to create a server.</p>
+    <p>SSH into your box. We now only need to go through a few steps to create a server .</p>
 
     <ol>
         <li>Install Chef</li>
@@ -995,6 +995,7 @@ Chef Client finished, 57 resources updated</pre>
 
     <p>So that's worked. We can now setup a Wordpress install with just a few commands! In the next chapter we'll show you how to provision new cloud servers with a single command and introduce better ways of working with Chef.</p>
 
+    <p><a href="chapter-two.html">Chapter 2: Unnamed Chapter &gt;&gt;</a></p>
     </div>
 
     </div>
