@@ -34,19 +34,86 @@
 
             <p><a href="index.html">&lt;&lt; Chapter 1: Introducing Chef</a></p>
 
-            <h2>2. Unnamed Chapter</h2>
+            <h2>2. Unnamed chapter</h2>
 
             <p>This chapter will extend on the building blocks of the previous chapter and introduce better ways of working than just SSH and using Chef in a client and server model.</p>
 
-            <p>We will now setup Chef on your workstation so you can edit files in your favourite text editor. We'll also install Git to allow us to keep track of changes in our Chef Repository.</p>
+            <h3>Chef client and server</h3>
+
+            <p>As well as using Chef on a single box with <strong>chef-solo</strong> it is also possible to use Chef in a client/server model. The Chef server stores and distributes our cookbooks and other Chef configuration when contacted by a client running the <strong>chef-client</strong> command. The <strong>chef-client</strong> command is the client/server version of <strong>chef-solo</strong>.</p>
+
+            <p>Storing the configuration inside a Chef Server instead of inside a file like <strong>web.json</strong> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This is an obvious advantage when dealing with a large number of servers but also when we need to create a new server.</p>
+
+            <h3>Node</h3>
+
+            <p>At this point it's prudent to introduce you to some Chef terminology. A computer, virtual machine or cloud instance you are running <strong>chef-solo</strong> or <strong>chef-client</strong> on is called a <strong>node</strong>. This differs slightly from what Chef calls a <strong>client</strong>. A client can also be your workstation that you don't run <strong>chef-client</strong> on but do use <strong>knife</strong> to manage your Chef server with.</p>
+
+            <h3>Workstation setup</h3>
+
+            <p>We will now setup your workstation so you can edit you Chef recipes in your favourite text editor. We'll also install Git to allow us to keep track of changes any our Chef Repository.</p>
 
             <p>Choose your workstation operating system:</p>
 
-            <ul class="nav nav-tabs">
-                <li><a href="#mac" data-toggle="tab">Mac</a></li>
-                <li><a href="#linux" data-toggle="tab">Linux</a></li>
-                <li><a href="#windows" data-toggle="tab">Windows</a></li>
-            </ul>
+            <div class="tabbable">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#mac" data-toggle="tab">Mac</a></li>
+                    <li><a href="#linux" data-toggle="tab">Linux</a></li>
+                    <li><a href="#windows" data-toggle="tab">Windows</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="mac">
+                        <p>Open Terminal (which can be found in <em>Utilities</em> under <em>Applications</em>).</p>
+
+                        <h3>Install Git</h3>
+                        <p>If you are already using Macports you should continue to use that otherwise follow the instructions for Homebrew.</p>
+
+                        <h4>Homebrew</h4>
+                        <p>Install Homebrew if it's not already installed.</p>
+                        
+                        <pre class="terminal">andy@bubbles:~# ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"</pre>
+
+                        <p>Install git.</p>
+
+                        <pre class="terminal">andy@bubbles:~# brew install git</pre>
+                        
+                        <h4>Macports</h4>
+                        <p>If you are already using Macports install git with the following commands.</p>
+                        <pre class="terminal">andy@bubbles:~# sudo port selfupdate
+andy@bubbles:~# sudo port install git-core +bash_completion</pre>
+
+                        <h3>Install Chef</h3>
+
+                        <pre class="terminal">andy@bubbles:~# curl -L https://www.opscode.com/chef/install.sh | sudo bash
+Thank you for installing Chef!</pre>
+
+                        <p>Save some typing by adding the various Chef commands to your $PATH.</p>
+                        <pre class="terminal">andy@bubbles:~# echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
+                       
+
+                    </div>
+                    <div class="tab-pane" id="linux">
+                        <p>Install <strong>curl</strong> if it is not already installed. Then install Chef.</p>
+                        
+                        <pre class="terminal">andy@bubbles:~# curl -L https://www.opscode.com/chef/install.sh | sudo bash
+Thank you for installing Chef!</pre>
+
+                        <p>Save some typing by adding the various Chef commands to your $PATH.</p>
+                        <pre class="terminal">andy@bubbles:~# echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
+
+                    </div>
+                    <div class="tab-pane" id="windows">
+                        <ol>
+                            <li>Download <a href="https://msysgit.googlecode.com/files/Git-1.8.1.2-preview20130201.exe" target="_blank">Git Installer for Windows</a>, run and accept the default options to install.</l1>
+                            <li>Download <a href="http://opscode.com/chef/install.msi" target="_blank">Windows Chef Installer</a>, run and accept the default options to install.</li>
+                        </ol>
+                    </div>
+                </div>    
+            </div>
+
+            <h3>Hosted Chef</h3>
+
+            <p>Opscode, the makers of Chef provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_bblank">Hosted Chef</a> which is a Chef server as a service. They offer a free trial which is ideal for our getting started guide purposes.</p>
 
         </div>
         <div id="push"></div>
@@ -72,7 +139,9 @@
       })();
 
     </script>
-
+    <script type="text/javascript" src="assets/js/lib/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/gswc.js"></script>
   </body>
 </html>
 

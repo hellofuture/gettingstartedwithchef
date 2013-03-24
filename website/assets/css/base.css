@@ -103,6 +103,14 @@ p {
   background: url(../img/hellovsmall.png) 0 10px no-repeat;
 }
 
+.tab-content {
+  padding: 0 20px;
+}
+
+.tab-content p {
+  margin: 0;
+}
+
 
 /* Custom page CSS
 -------------------------------------------------- */
