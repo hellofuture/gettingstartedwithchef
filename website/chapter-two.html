@@ -34,7 +34,7 @@
 
             <p><a href="index.html">&lt;&lt; Chapter 1: Introducing Chef</a></p>
 
-            <h2>2. Unnamed chapter</h2>
+            <h2>2. Introducing Chef Server</h2>
 
             <p>This chapter will extend on the building blocks of the previous chapter and introduce better ways of working than just SSH and using Chef in a client and server model.</p>
 
@@ -42,7 +42,7 @@
 
             <p>As well as using Chef on a single box with <strong>chef-solo</strong> it is also possible to use Chef in a client/server model. The Chef server stores and distributes our cookbooks and other Chef configuration when contacted by a client running the <strong>chef-client</strong> command. The <strong>chef-client</strong> command is the client/server version of <strong>chef-solo</strong>.</p>
 
-            <p>Storing the configuration inside a Chef Server instead of inside a file like <strong>web.json</strong> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This is an obvious advantage when dealing with a large number of servers but also when we need to create a new server.</p>
+            <p>Storing the configuration inside a Chef Server instead of inside a file like <strong>web.json</strong> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This has an obvious advantage when dealing with a large number of servers and allows us to easily provision new servers with knife.</p>
 
             <h3>Node</h3>
 
@@ -99,7 +99,7 @@ Thank you for installing Chef!</pre>
 Thank you for installing Chef!</pre>
 
                         <p>Save some typing by adding the various Chef commands to your $PATH.</p>
-                        <pre class="terminal">andy@bubbles:~# echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
+                        <pre class="terminal"  echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
 
                     </div>
                     <div class="tab-pane" id="windows">
@@ -113,7 +113,9 @@ Thank you for installing Chef!</pre>
 
             <h3>Hosted Chef</h3>
 
-            <p>Opscode, the makers of Chef provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_blank">Hosted Chef</a> which is a Chef server as a service. They offer a free tier which is good for 5 nodes so is ideal to help us get started.</p>
+            <p>Opscode, the makers of Chef provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_blank">Hosted Chef</a> which is a Chef Server as a service. They offer a free tier which is good for 5 nodes so is ideal to help us get started.</p>
+
+            <p>Follow the instructions to sign up on the website and log in.</p>
 
             <p>Now we've signed up we will download some files that will allow us to use our Hosted Chef account with knife. Visit <a href="https://manage.opscode.com/organizations" target="_blank">https://manage.opscode.com/organizations</a>.</p>
 
@@ -121,7 +123,6 @@ Thank you for installing Chef!</pre>
             <p><img class="img-rounded" alt="Hosted Chef - Organizations page screenshot" src="assets/img/hosted-chef-organizations.png" /></p>
 
             <p>Click the <strong>Generate knife config</strong> link. Download the knife.rb file that is generated.</p>
-
 
             <p>Then click the <strong>Regenerate validation key</strong> link. Press OK to the alert and download the .pem file.</p>
 
@@ -131,7 +132,102 @@ Thank you for installing Chef!</pre>
 
             <p>Press the <strong>Get a new key</strong> button and download the .pem file.</p>
 
-            <p>We now have all the files we need.</p>
+            <h3>Using Hosted Chef</h3>
+
+            <p>We'll now use Hosted Chef along with the chef repository we made in the previous chapter. Firstly, let's download our chef repository.</p>
+
+            <pre class="terminal">andy@bubbles:~# <span class="cmd">wget http://gettingstartedwithchef.com/downloads/cp1.tgz</span>
+--2013-06-09 13:36:15--  http://gettingstartedwithchef.com/downloads/cp1.tgz
+Resolving gettingstartedwithchef.com (gettingstartedwithchef.com)... 80.68.93.116
+Connecting to gettingstartedwithchef.com (gettingstartedwithchef.com)|80.68.93.116|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 300046 (293K) [text/plain]
+Saving to: ‘cp1.tgz’
+
+100%[===============================================================================>] 300,046     1.78MB/s   in 0.2s   
+
+2013-06-09 13:36:15 (1.78 MB/s) - ‘cp1.tgz’ saved [300046/300046]
+andy@bubbles:~# <span class="cmd">tar zxf cp1.tgz</span>
+andy@bubbles:~# <span class="cmd">cd chef-repo</span></pre>
+
+        <p>We now have everything we need, so let's start using Hosted Chef. Firstly, we need to tell knife to use Hosted Chef. To do this we need copy the files we just downloaded from Hosted Chef to our repository.</p>
+ 
+        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">mv ~/Downloads/*.pem .chef/</span>
+andy@bubbles:~/chef-repo# <span class="cmd">mv ~/Downloads/knife.rb .chef/</span></pre>
+
+        <p>Let's check that knife can talk to Hosted Chef.</p>
+
+        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife client list</span>
+<span class="code2highlight">org_name</span>-validator</pre>
+
+        <p>&quot;org_name&quot; will be whatever you entered as your organisation name when signing up for Hosted Chef.</p>
+
+        <h3>Uploading Cookbooks</h3>
+
+        <p>Before we can configure our node with <strong>chef-client</strong>, we need to upload our cookbooks to the Chef server. We do that with <strong>knife</strong>.</p>
+
+        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife cookbook upload --all</span>
+Uploading apache2      [1.6.0]
+Uploading apt          [1.9.0]
+Uploading aws          [0.100.6]
+Uploading build-essential [1.3.4]
+Uploading database     [1.3.12]
+Uploading mysql        [2.1.2]
+Uploading openssl      [1.0.2]
+Uploading php          [1.1.8]
+Uploading phpapp       [0.1.0]
+Uploading postgresql   [2.2.2]
+Uploading xfs          [1.1.0]
+Uploading xml          [1.1.2]
+Uploaded all cookbooks.</pre>
+
+        <h3>Roles</h3>
+
+        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but we if we have multiple nodes we should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
+
+        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife role create phpapp</span></pre>
+        
+        <p>You may receive the following error if you do not have an EDITOR environment variable set.</p>
+
+        <pre class="terminal"><span class="chef-error">ERROR:</span> RuntimeError: Please set EDITOR environment variable</pre>
+
+        <p>You can resolve this quickly with the <strong>--editor</strong> option. e.g. <strong>--editor vi</strong> or <strong>--editor nano</strong> etc.</p> 
+        
+        <p>We are then presented with the basic structure of the role as a JSON file.</p>
+
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>
+
+
+
+
+
+
+
+
+
+        <h3>Bootstrapping a node with Knife</h3>
+
+        <p><a href="https://vimeo.com/61380630" target="_blank">Create a new Ubuntu instance in the Rackspace Cloud</a> or use your virtual machine software to create a new Ubuntu box.</p>
+
+
+
+
+
         </div>
         <div id="push"></div>
     </div>
