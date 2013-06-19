@@ -212,10 +212,26 @@ Uploaded all cookbooks.</pre>
 }
 </pre>
 
+        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> let's us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's save to ignore the fields that have not been mentioned for now.</p>
 
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    <span class="code2add">"recipe[apt]", "recipe[phpapp]"</span>
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>
 
-
-
+        <p>Add the code in green. We now need to specify some attributes. We can't specify all the attributes we used with <strong>chef-solo</strong> in our JSON file in the last chapter as roles should be generic. Things like virtual host names or MySQL access details such as user names and passwords should be defined elsewhere.</p>
 
 
 
