@@ -50,70 +50,26 @@
 
             <h3>Workstation setup</h3>
 
-            <p>We will now setup your workstation so you can edit you Chef recipes in your favourite text editor. We'll also install Git to allow us to keep track of changes any our Chef Repository.</p>
+            <div class="alert alert-block"><strong>Windows users!</strong> Sorry, Windows workstation instructions will be added to this chapter shortly.</div>
 
-            <p>Choose your workstation operating system:</p>
+            <p>We will now setup your workstation so you can edit you Chef recipes in your favourite text editor.</p>
 
-            <div class="tabbable">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a href="#mac" data-toggle="tab">Mac</a></li>
-                    <li><a href="#linux" data-toggle="tab">Linux</a></li>
-                    <li><a href="#windows" data-toggle="tab">Windows</a></li>
-                </ul>
 
-                <div class="tab-content">
-                    <div class="tab-pane active" id="mac">
-                        <p>Open Terminal (which can be found in <em>Utilities</em> under <em>Applications</em>).</p>
 
-                        <h3>Install Git</h3>
-                        <p>If you are already using Macports you should continue to use that otherwise follow the instructions for Homebrew.</p>
+            <p>Install <strong>curl</strong> if it is not already installed. Then install Chef.</p>
 
-                        <h4>Homebrew</h4>
-                        <p>Install Homebrew if it's not already installed.</p>
-                        
-                        <pre class="terminal">andy@bubbles:~# ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"</pre>
+            <h3>Install Chef</h3>
 
-                        <p>Install git.</p>
-
-                        <pre class="terminal">andy@bubbles:~# brew install git</pre>
-                        
-                        <h4>Macports</h4>
-                        <p>If you are already using Macports install git with the following commands.</p>
-                        <pre class="terminal">andy@bubbles:~# sudo port selfupdate
-andy@bubbles:~# sudo port install git-core +bash_completion</pre>
-
-                        <h3>Install Chef</h3>
-
-                        <pre class="terminal">andy@bubbles:~# curl -L https://www.opscode.com/chef/install.sh | sudo bash
+            <pre class="terminal">$ <span class="cmd">curl -L https://www.opscode.com/chef/install.sh | sudo bash</span>
 Thank you for installing Chef!</pre>
 
-                        <p>Save some typing by adding the various Chef commands to your $PATH.</p>
-                        <pre class="terminal">andy@bubbles:~# echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
-                       
-
-                    </div>
-                    <div class="tab-pane" id="linux">
-                        <p>Install <strong>curl</strong> if it is not already installed. Then install Chef.</p>
-                        
-                        <pre class="terminal">andy@bubbles:~# curl -L https://www.opscode.com/chef/install.sh | sudo bash
-Thank you for installing Chef!</pre>
-
-                        <p>Save some typing by adding the various Chef commands to your $PATH.</p>
-                        <pre class="terminal"  echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</pre>
-
-                    </div>
-                    <div class="tab-pane" id="windows">
-                        <ol>
-                            <li>Download <a href="https://msysgit.googlecode.com/files/Git-1.8.1.2-preview20130201.exe" target="_blank">Git Installer for Windows</a>, run and accept the default options to install.</l1>
-                            <li>Download <a href="http://opscode.com/chef/install.msi" target="_blank">Windows Chef Installer</a>, run and accept the default options to install.</li>
-                        </ol>
-                    </div>
-                </div>    
-            </div>
+            <p>Save some typing by adding the various Chef commands to your $PATH.</p>
+            
+            <pre class="terminal">$ <span class="cmd">echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</span></pre>
 
             <h3>Hosted Chef</h3>
 
-            <p>Opscode, the makers of Chef provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_blank">Hosted Chef</a> which is a Chef Server as a service. They offer a free tier which is good for 5 nodes so is ideal to help us get started.</p>
+            <p>Opscode, the makers of Chef, provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_blank">Hosted Chef</a> which is a Chef Server as a service. They offer a free tier which is good for 5 nodes so is ideal to help us get started.</p>
 
             <p>Follow the instructions to sign up on the website and log in.</p>
 
@@ -136,7 +92,7 @@ Thank you for installing Chef!</pre>
 
             <p>We'll now use Hosted Chef along with the chef repository we made in the previous chapter. Firstly, let's download our chef repository.</p>
 
-            <pre class="terminal">andy@bubbles:~# <span class="cmd">wget http://gettingstartedwithchef.com/downloads/cp1.tgz</span>
+            <pre class="terminal">$ <span class="cmd">wget http://gettingstartedwithchef.com/downloads/cp1.tgz</span>
 --2013-06-09 13:36:15--  http://gettingstartedwithchef.com/downloads/cp1.tgz
 Resolving gettingstartedwithchef.com (gettingstartedwithchef.com)... 80.68.93.116
 Connecting to gettingstartedwithchef.com (gettingstartedwithchef.com)|80.68.93.116|:80... connected.
@@ -147,17 +103,17 @@ Saving to: ‘cp1.tgz’
 100%[===============================================================================>] 300,046     1.78MB/s   in 0.2s   
 
 2013-06-09 13:36:15 (1.78 MB/s) - ‘cp1.tgz’ saved [300046/300046]
-andy@bubbles:~# <span class="cmd">tar zxf cp1.tgz</span>
-andy@bubbles:~# <span class="cmd">cd chef-repo</span></pre>
+$ <span class="cmd">tar zxf cp1.tgz</span>
+$ <span class="cmd">cd chef-repo</span></pre>
 
         <p>We now have everything we need, so let's start using Hosted Chef. Firstly, we need to tell knife to use Hosted Chef. To do this we need copy the files we just downloaded from Hosted Chef to our repository.</p>
  
-        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">mv ~/Downloads/*.pem .chef/</span>
-andy@bubbles:~/chef-repo# <span class="cmd">mv ~/Downloads/knife.rb .chef/</span></pre>
+        <pre class="terminal">$ <span class="cmd">mv ~/Downloads/*.pem .chef/</span>
+$ <span class="cmd">mv ~/Downloads/knife.rb .chef/</span></pre>
 
         <p>Let's check that knife can talk to Hosted Chef.</p>
 
-        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife client list</span>
+        <pre class="terminal">$ <span class="cmd">knife client list</span>
 <span class="code2highlight">org_name</span>-validator</pre>
 
         <p>&quot;org_name&quot; will be whatever you entered as your organisation name when signing up for Hosted Chef.</p>
@@ -166,7 +122,7 @@ andy@bubbles:~/chef-repo# <span class="cmd">mv ~/Downloads/knife.rb .chef/</span
 
         <p>Before we can configure our node with <strong>chef-client</strong>, we need to upload our cookbooks to the Chef server. We do that with <strong>knife</strong>.</p>
 
-        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife cookbook upload --all</span>
+        <pre class="terminal">$ <span class="cmd">knife cookbook upload --all</span>
 Uploading apache2      [1.6.0]
 Uploading apt          [1.9.0]
 Uploading aws          [0.100.6]
@@ -185,7 +141,7 @@ Uploaded all cookbooks.</pre>
 
         <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but we if we have multiple nodes we should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
 
-        <pre class="terminal">andy@bubbles:~/chef-repo# <span class="cmd">knife role create phpapp</span></pre>
+        <pre class="terminal">$ <span class="cmd">knife role create phpapp</span></pre>
         
         <p>You may receive the following error if you do not have an EDITOR environment variable set.</p>
 
@@ -212,13 +168,14 @@ Uploaded all cookbooks.</pre>
 }
 </pre>
 
-        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> let's us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's save to ignore the fields that have not been mentioned for now.</p>
+        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> let's us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's safe to ignore the fields that have not been mentioned for now.</p>
 
         <pre class="editor">{
   "name": "phpapp",
   "description": "",
   "json_class": "Chef::Role",
   "default_attributes": {
+
   },
   "override_attributes": {
   },
@@ -231,18 +188,73 @@ Uploaded all cookbooks.</pre>
 }
 </pre>
 
-        <p>Add the code in green. We now need to specify some attributes. We can't specify all the attributes we used with <strong>chef-solo</strong> in our JSON file in the last chapter as roles should be generic. Things like virtual host names or MySQL access details such as user names and passwords should be defined elsewhere.</p>
+        <p>Enter our run list, highlighted in green. We should now specify some attributes. We don't need to specify the attributes for the <strong>mysql</strong> cookbook as it creates secure random passwords automatically in <strong>chef-client</strong> mode. Our <strong>phpapp</strong> cookbook requires us to specify a password attribute so let's add that to <strong>default_attributes</strong>.</p>
 
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    <span class="code2add">"phpapp": {"db_password": "212b09752d173876a84d374333ae1ffe"}</span>
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[apt]", "recipe[phpapp]"
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>  
 
+        <p>Add the code in green above. Save the file. The role will be uploaded to Hosted Chef and knife will display the following message.</p>
 
+        <pre class="terminal">Created role[phpapp]</pre>
+
+        <p>Let's confirm the role is on the server.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role list</span>
+phpapp</pre>
+  
+        <p>Finally, we should download the role from the server and place it into our roles directory for safe keeping.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role show phpapp -d -Fjson > roles/phpapp.json</span></pre>
+
+        <p>Having the file in our chef repository allows us to edit the role at our leisure and check it into version control systems such as Git, something we'll get to in a later chapter. We can upload the file to server again using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role from file roles/phpapp.json</span>
+Updated Role phpapp!</pre>
+
+        <p>We're now ready to bootstrap our new node with knife.</p>
 
         <h3>Bootstrapping a node with Knife</h3>
 
         <p><a href="https://vimeo.com/61380630" target="_blank">Create a new Ubuntu instance in the Rackspace Cloud</a> or use your virtual machine software to create a new Ubuntu box.</p>
 
+        <p>If you are using a new Rackspace Cloud instance replace &quot;<strong>password</strong>&quot; with the root password and &quot;<strong>hostname</strong>&quot; with it's hostname or IP address and run the following command.</p>
 
+        <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --ssh-user root --ssh-password <span class="code2highlight">password</span> <span class="code2highlight">hostname</span></span></pre>
 
+        <p>Otherwise the <strong>knife bootstrap</strong> command you need will be specific to your setup. To use a ssh key and sudo before executing the bootstrap you might use the following command, replacing <strong>&lt;hostname&gt;</strong> with the hostname or IP address of the machine you intend to bootstrap.</p>
 
+        <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --sudo <span class="code2highlight">hostname</span></span></pre>     
+
+        <p>You'll see some output along these lines.</p>
+
+        <pre class="terminal">Bootstrapping Chef on intro.hellofutu.re
+..
+<span class="code2remote">intro.hellofutu.re</span>
+<span class="code2remote">intro.hellofutu.re</span> Chef Client finished, 61 resources updated
+<span class="code2remote">intro.hellofutu.re</span></pre>
+
+        <p>And if you visit your new node in your web browser you'll see the following.</p>
+
+        <p><img class="img-rounded" src="assets/img/hello-wordpress.png" /></p>
+  
+        <p>That's fairly impressive I'm sure you'll agree! But it gets better. We can use knife to create the cloud instances for us as well!</p>
+
+        
 
         </div>
         <div id="push"></div>

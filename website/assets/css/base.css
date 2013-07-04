@@ -94,6 +94,12 @@ p {
   color: blue;
 }
 
+.code2remote {
+  color: teal;
+}
+
+
+
 .code2highlight {
   font-weight: bold;
   color: yellow;
