@@ -254,7 +254,35 @@ Updated Role phpapp!</pre>
   
         <p>That's fairly impressive I'm sure you'll agree! But it gets better. We can use knife to create the cloud instances for us as well!</p>
 
-        
+        <h3>Creating cloud instances with Knife</h3>
+
+        <p>Knife plugins extend Knife's functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for automation and quick horizontal scaling.</p>
+
+        <p>Installing Knife plugins is unfortunately a bit more involved than what we've previously done, so please select the appropriate tab below for your workstation below.</p>
+
+
+
+
+
+        <div class="alert alert-block"><strong>Linux users!</strong> You may need to install <strong>ruby1.9.1-dev</strong> before they can install Knife plugins.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo apt-get install ruby1.9.1-dev</span></pre>
+        </div>        
+
+        <h4>Rackspace Cloud</h4>
+
+        <p>We'll start with creating Rackspace Cloud. First we need to install the <strong>knife-openstack</strong> plugin.</p>
+
+
+
+
+
+
+        <pre class="terminal">$ <span class="cmd">sudo gem install knife-openstack</span></pre>
+
+
+
+
 
         </div>
         <div id="push"></div>
