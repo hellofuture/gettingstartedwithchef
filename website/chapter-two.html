@@ -256,32 +256,40 @@ Updated Role phpapp!</pre>
 
         <h3>Creating cloud instances with Knife</h3>
 
-        <p>Knife plugins extend Knife's functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for automation and quick horizontal scaling.</p>
-
-        <p>Installing Knife plugins is unfortunately a bit more involved than what we've previously done, so please select the appropriate tab below for your workstation below.</p>
-
-
-
-
-
-        <div class="alert alert-block"><strong>Linux users!</strong> You may need to install <strong>ruby1.9.1-dev</strong> before they can install Knife plugins.</p>
-
-        <pre class="terminal">$ <span class="cmd">sudo apt-get install ruby1.9.1-dev</span></pre>
-        </div>        
+        <p>Knife plugins extend its functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for automation and quick horizontal scaling.</p>
 
         <h4>Rackspace Cloud</h4>
 
-        <p>We'll start with creating Rackspace Cloud. First we need to install the <strong>knife-openstack</strong> plugin.</p>
+        <p>We'll start by creating a Rackspace Cloud instance. First we need to install the <strong>knife-rackspace</strong> plugin.</p>
 
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-rackspace</span>
+...
+Successfully installed knife-rackspace-0.7.0</pre>
 
+        <p>Now we need to set some details in .chef/knife.rb (which is inside your Chef Repository). Open it up in your favourite text editor.</p>
 
+<pre class="editor"><span class="code2add">knife[:rackspace_api_username] = "testorg"
+knife[:rackspace_api_key] = "APIKEY"</span></pre>
 
+        <p>Add the green lines above. Remember to replace <em>testorg</em> and <em>APIKEY</em> with your Rackspace username and API key.</p>
 
+        <p>If you don't live in America you will need to specify an alternative authentication URL. Below is an example for the UK. Valid regions are: "dfw" "ord" "lon" and "syd".</p>
 
-        <pre class="terminal">$ <span class="cmd">sudo gem install knife-openstack</span></pre>
+        <pre class="editor">knife[:rackspace_api_username] = "testorg"
+knife[:rackspace_api_key] = "APIKEY"
+<span class="code2add">knife[:rackspace_auth_url] = "https://lon.identity.api.rackspacecloud.com/v2.0"</span></pre>
+  
+        <p>Save knife.rb. We can test to see if that's worked using the following command.</p>
 
-
-
+        <pre class="terminal">$ <span class="cmd">knife rackspace flavor list</span><strong>
+ID  Name                          VCPUs   RAM     Disk</strong>
+2   512MB Standard Instance  1      512    20 GB  
+3   1GB Standard Instance    1      1024   40 GB  
+4   2GB Standard Instance    2      2048   80 GB  
+5   4GB Standard Instance    2      4096   160 GB 
+6   8GB Standard Instance    4      8192   320 GB 
+7   15GB Standard Instance   6      15360  620 GB 
+8   30GB Standard Instance   8      30720  1200 GB</pre>
 
 
         </div>
