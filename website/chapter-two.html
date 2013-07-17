@@ -54,8 +54,6 @@
 
             <p>We will now setup your workstation so you can edit you Chef recipes in your favourite text editor.</p>
 
-
-
             <p>Install <strong>curl</strong> if it is not already installed. Then install Chef.</p>
 
             <h3>Install Chef</h3>
@@ -290,6 +288,71 @@ ID  Name                          VCPUs   RAM     Disk</strong>
 6   8GB Standard Instance    4      8192   320 GB 
 7   15GB Standard Instance   6      15360  620 GB 
 8   30GB Standard Instance   8      30720  1200 GB</pre>
+
+        <p>We can get a list of available images (operating systems) with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace image list</span><strong>
+ID                                          Name</strong>
+32b7d027-8a40-458b-9e73-bd719d660df6  Arch 2013.6
+e0ed4adb-3a00-433e-a0ac-a51f1bc1ea3d  CentOS 6.4
+81877a6e-9e87-4b1f-93f3-b176e25f3c4a  Debian 7 (Wheezy)
+f3a23d0a-de1b-4eb7-994f-5f0de9d8d7a0  Fedora 19 (Schrodinger's Cat)
+ccaf99bc-472a-46ea-a125-d3ecfca66695  FreeBSD 9.1
+bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
+8958846f-679b-454e-9232-20d3792fc5d7  OpenSUSE 12.3
+16e6c0ae-f881-4180-95b0-3450fe3f8e96  Red Hat Enterprise Linux 6.4
+23cebbc9-3219-4a27-9210-d63e1af7181b  Ubuntu 13.04 (Raring Ringtail)
+48df4181-040e-4821-8723-d9e4ba908d2f  Windows Server 2008 R2 SP1
+</pre>          
+
+        <p>We can now provision and bootstrap a server with the following command. From the commands above we know we want a flavor of "2" and the Ubuntu 13.04 image which is catchily entitled "23cebbc9-3219-4a27-9210-d63e1af7181b".</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp]"</span>
+...</pre>
+
+        <p>After a while your instance will be created, bootstrapped and Chef will be run and something similar to below will be displayed.</p>
+
+        <pre class="terminal"><span class="code2remote">192.168.9.199</span> Chef Client finished, 61 resources updated
+<span class="code2remote">192.168.9.199</span>
+
+<span class="code2remote">Instance ID</span>: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2remote">Host ID</span>: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="code2remote">Name</span>: rs-xxxxxxxxxxxxxxxxx
+<span class="code2remote">Flavor</span>: 512MB Standard Instance
+<span class="code2remote">Image</span>: Ubuntu 13.04 (Raring Ringtail)
+<span class="code2remote">Metadata</span>: []
+<span class="code2remote">Public DNS Name</span>: 192-168-9-199.static.cloud-ips.com
+<span class="code2remote">Public IP Address</span>: 192.168.9.199
+<span class="code2remote">Private IP Address</span>: 10.9.3.199
+<span class="code2remote">Password</span>: xxxxxxxxxxxx
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]
+</pre>
+
+        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the Wordpress install page.</p>
+
+        <p>We can even use knife to clean up our servers. Get a list of servers with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server list</span><strong>
+Instance ID  Name  Public IP       Private IP    Flavor  Image                                       State</strong>
+xxxxxxxx   rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
+
+        <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value you under Instance ID when you run the command above.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server delete --purge <span class="code2highlight">INSTANCE_ID</span></span>
+<span class="code2remote">Instance ID</span>: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2remote">Host ID</span>: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="code2remote">Name</span>: rs-xxxxxxxxxxxxxxxxx
+<span class="code2remote">Flavor</span>: 512MB Standard Instance
+<span class="code2remote">Image</span>: Ubuntu 13.04 (Raring Ringtail)
+<span class="code2remote">Public IP Address</span>: 192.168.9.199
+<span class="code2remote">Private IP Address</span>: 10.9.1.199
+
+Do you really want to delete this server? (Y/N) y
+<span class="code2highlight">WARNING:</span> Deleted server xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2highlight">WARNING:</span> Deleted node rs-xxxxxxxxxxxxxxxxx
+<span class="code2highlight">WARNING:</span> Deleted client rs-xxxxxxxxxxxxxxxxx</pre>
+
 
 
         </div>
