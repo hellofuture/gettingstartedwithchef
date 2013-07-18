@@ -104,7 +104,7 @@ Saving to: ‘cp1.tgz’
 $ <span class="cmd">tar zxf cp1.tgz</span>
 $ <span class="cmd">cd chef-repo</span></pre>
 
-        <p>We now have everything we need, so let's start using Hosted Chef. Firstly, we need to tell knife to use Hosted Chef. To do this we need copy the files we just downloaded from Hosted Chef to our repository.</p>
+        <p>We now have everything we need, so let's start using Hosted Chef. Firstly, we need to tell knife to use Hosted Chef. To do this we need to copy the files we just downloaded from Hosted Chef to our repository.</p>
  
         <pre class="terminal">$ <span class="cmd">mv ~/Downloads/*.pem .chef/</span>
 $ <span class="cmd">mv ~/Downloads/knife.rb .chef/</span></pre>
@@ -137,7 +137,7 @@ Uploaded all cookbooks.</pre>
 
         <h3>Roles</h3>
 
-        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but we if we have multiple nodes we should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
+        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
 
         <pre class="terminal">$ <span class="cmd">knife role create phpapp</span></pre>
         
