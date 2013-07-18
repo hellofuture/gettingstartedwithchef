@@ -166,7 +166,7 @@ Uploaded all cookbooks.</pre>
 }
 </pre>
 
-        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> let's us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's safe to ignore the fields that have not been mentioned for now.</p>
+        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> lets us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's safe to ignore the fields that have not been mentioned for now.</p>
 
         <pre class="editor">{
   "name": "phpapp",
@@ -219,7 +219,7 @@ phpapp</pre>
 
         <pre class="terminal">$ <span class="cmd">knife role show phpapp -d -Fjson > roles/phpapp.json</span></pre>
 
-        <p>Having the file in our chef repository allows us to edit the role at our leisure and check it into version control systems such as Git, something we'll get to in a later chapter. We can upload the file to server again using the following command.</p>
+        <p>Having the file in our chef repository allows us to edit the role at our leisure and check it into version control systems such as Git, something we'll get to in a later chapter. We can upload the file to Hosted Chef again using the following command.</p>
 
         <pre class="terminal">$ <span class="cmd">knife role from file roles/phpapp.json</span>
 Updated Role phpapp!</pre>
@@ -254,7 +254,7 @@ Updated Role phpapp!</pre>
 
         <h3>Creating cloud instances with Knife</h3>
 
-        <p>Knife plugins extend its functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for automation and quick horizontal scaling.</p>
+        <p>Knife plugins extend its functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for quick horizontal scaling.</p>
 
         <h4>Rackspace Cloud</h4>
 
@@ -337,7 +337,7 @@ bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
 Instance ID  Name  Public IP       Private IP    Flavor  Image                                       State</strong>
 xxxxxxxx   rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
 
-        <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value you under Instance ID when you run the command above.</p>
+        <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value under Instance ID from the server list command above.</p>
 
         <pre class="terminal">$ <span class="cmd">knife rackspace server delete --purge <span class="code2highlight">INSTANCE_ID</span></span>
 <span class="code2remote">Instance ID</span>: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
