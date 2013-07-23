@@ -42,7 +42,7 @@
 
             <p>As well as using Chef on a single box with <strong>chef-solo</strong> it is also possible to use Chef in a client/server model. The Chef server stores and distributes our cookbooks and other Chef configuration when contacted by a client running the <strong>chef-client</strong> command. The <strong>chef-client</strong> command is the client/server version of <strong>chef-solo</strong>.</p>
 
-            <p>Storing the configuration inside a Chef Server instead of inside a file like <strong>web.json</strong> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This has an obvious advantage when dealing with a large number of servers and allows us to easily provision new servers with knife.</p>
+            <p>Storing the configuration inside a Chef Server instead of inside a file like <em>web.json</em> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This has an obvious advantage when dealing with a large number of servers and allows us to easily provision new servers with <strong>knife</strong>.</p>
 
             <h3>Node</h3>
 
@@ -254,7 +254,10 @@ Updated Role phpapp!</pre>
 
         <h3>Creating cloud instances with Knife</h3>
 
-        <p>Knife plugins extend its functionality and make knife even more useful! One example is that they allow us to provision cloud instances before they are bootstrapped. This is useful for quick horizontal scaling.</p>
+        <p>Knife plugins extend its functionality and make knife even more useful! Amongst other things, knife plugins allow us to automatically create cloud instances before we bootstrap them. You can view the <a href="http://docs.opscode.com/plugin_knife.html" target="_blank">full list of official knife plugins over at docs.opscode.com</a>.</p>
+
+
+        </p>
 
         <h4>Rackspace Cloud</h4>
 
@@ -334,7 +337,7 @@ bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
         <p>We can even use knife to clean up our servers. Get a list of servers with the following command.</p>
 
         <pre class="terminal">$ <span class="cmd">knife rackspace server list</span><strong>
-Instance ID  Name  Public IP       Private IP    Flavor  Image                                       State</strong>
+Instance ID  Name  Public IP       Private IP    Flavor  Image                         State</strong>
 xxxxxxxx   rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
 
         <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value under Instance ID from the server list command above.</p>
@@ -353,7 +356,105 @@ Do you really want to delete this server? (Y/N) y
 <span class="code2highlight">WARNING:</span> Deleted node rs-xxxxxxxxxxxxxxxxx
 <span class="code2highlight">WARNING:</span> Deleted client rs-xxxxxxxxxxxxxxxxx</pre>
 
+        <h4>Amazon Cloud</h4>
 
+        <p>We can also use <strong>knife</strong> to bootstrap Amazon EC2 instances. First install the plugin.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-ec2</span>
+...
+Successfully installed knife-ec2-0.6.4</pre>
+
+        <p>You need to obtain the following information for your Amazon AWS account. It can all be found or set-up inside the Amazon AWS console.</p>
+
+        <ul>
+          <li>access key id</li>
+          <li>secret access key</li>
+          <li>name of the ssh key you want to use</li>
+          <li>an Ubuntu 12.04 or 13.04 AMI</li>
+          <li>the AWS region you want to use</li>
+          <li>the name of a security group that allows SSH and web access</li>
+        </ul>
+
+        <p>We should now configure knife with those details. Open chef/knife.rb.</p> 
+
+        <pre class="editor"><span class="code2add">knife[:aws_access_key_id]  = "XXXXXXXXXXXXXXXXXXXX"
+knife[:aws_secret_access_key] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+knife[:aws_ssh_key_id] = "sshkey"</span></pre>
+
+        <p>Add the lines in green, entering your access key id, secret access key and ssh key name without .pem. Save the file.</p>
+
+        <p>We can now access a list of cloud instances with the following command. Cloud servers will be listed whether they have been created with knife or not.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server list</span>
+<strong>Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State</strong></pre>
+
+        <p>I have no servers listed. This is because my servers reside in the region <em>eu-west-1</em>. We can specify a region by using the option <em>--region</em>.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server list --region eu-west1</span><strong>
+Instance ID  Name      Public IP  Private IP  Flavor    Image         SSH Key Security Groups  State</strong>
+i-xxxxxxxx   server01  x.x.x.x    x.x.x.x     m1.small  ami-3d160149  sshkey  www, default     <span class="action">running</span></pre>
+
+
+        <p>I can use knife to provision and bootstrap a cloud instance with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span>
+...</pre>
+
+        <p>After a while we'll see the following result.</p>
+
+        <pre class="terminal"><span class="code2remote">ec2-x-x-x-x.eu-west-1.compute.amazonaws.com</span> Chef Client finished, 57 resources updated
+<span class="code2remote">ec2-x-x-x-x.eu-west-1.compute.amazonaws.com</span>
+
+<span class="code2remote">Instance ID</span>: i-xxxxxxxx
+<span class="code2remote">Flavor</span>: m1.small
+<span class="code2remote">Image</span>: ami-3d160149
+<span class="code2remote">Region</span>: eu-west-1
+<span class="code2remote">Availability Zone</span>: eu-west-1a
+<span class="code2remote">Security Groups</span>: www, default
+<span class="code2remote">Security Group Ids</span>: default
+<span class="code2remote">Tags</span>: {"Name"=>"server01"}
+<span class="code2remote">SSH Key</span>: sshkey
+<span class="code2remote">Root Device Type</span>: ebs
+<span class="code2remote">Root Volume ID</span>: vol-xxxxxxxx
+<span class="code2remote">Root Device Name</span>: /dev/sda1
+<span class="code2remote">Root Device Delete on Terminate</span>: true
+<span class="code2remote">Public DNS Name</span>: ec2-x-x-x-x.eu-west-1.compute.amazonaws.com
+<span class="code2remote">Public IP Address</span>: x.x.x.x
+<span class="code2remote">Private DNS Name</span>: ip-x-x-x-x.eu-west-1.compute.internal
+<span class="code2remote">Private IP Address</span>: x.x.x.x
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]</pre>
+
+        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the Wordpress install page.</p>
+
+        <p>You can also delete instances you no longer need with knife. Using the instance ID from the output of the server create command above, we can delete the instance we just made using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server delete --purge --region eu-west-1 i-xxxxxxxx --node-name server01</span>
+<span class="code2remote">Instance ID</span>: i-xxxxxxxx
+<span class="code2remote">Flavor</span>: m1.small
+<span class="code2remote">Image</span>: ami-xxxxxxxx
+<span class="code2remote">Region</span>: eu-west-1
+<span class="code2remote">Availability Zone</span>: eu-west-1a
+<span class="code2remote">SSH Key</span>: sshkey
+<span class="code2remote">Root Device Type</span>: ebs
+
+Do you really want to delete this server? (Y/N) y
+<span class="code2highlight">WARNING</span>: Deleted server i-xxxxxxxx
+<span class="code2highlight">WARNING</span>: Deleted node server01
+<span class="code2highlight">WARNING</span>: Deleted client server01</pre>
+
+        <p>The command used some extra options, here's why:</p>
+
+        <dl>
+          <dt>--purge</dt>
+          <dd>ensures the server is also deleted from our Hosted Chef account</dd>
+          <dt>--node-name</dt>
+          <dd>required when using <em>--purge</em> if the server name is different from the instance ID</dd>
+          <dt>--region</dt>
+          <dd>specifies a region other than the default.</dd>
+        </dl>
+
+        <p>Hopefully you used either an Amazon or Rackspace cloud account and automatically bootstrapped a cloud instance using knife. In the next chapter we'll introduce some tools that will make manging and developing our cookbooks a lot easier and modify our Chef environment to work with multiple cloud instances.</p> 
 
         </div>
         <div id="push"></div>
