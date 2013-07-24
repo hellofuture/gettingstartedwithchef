@@ -130,6 +130,19 @@ p {
   margin: 0;
 }
 
+#hellofutureinfo {
+  background-color: #f0f0f0;
+  font-size: small;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#hellofutureinfo .container {
+}
+
+#hellofutureinfo .container p {
+  margin: 7px 0;
+}
+
 
 /* Custom page CSS
 -------------------------------------------------- */
