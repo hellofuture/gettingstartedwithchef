@@ -1,6 +1,6 @@
 gettingstartedwithchef
 ======================
 
-Getting Started with Chef website
+Getting started with Chef website
 
 http://gettingstartedwithchef.com/
