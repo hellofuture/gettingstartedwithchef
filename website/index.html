@@ -68,12 +68,13 @@
 
         <p>SSH to your vanilla Ubuntu box and run the following command to install Chef. This used to be a more involved process but thanks to the new omnibus installer it couldn't be simpler.</p>
 
-        <pre class="terminal">root@intro:~# curl -L https://www.opscode.com/chef/install.sh | bash
+        <pre class="terminal">root@intro:~# <span class="cmd">cd ~</span>
+root@intro:~# <span class="cmd">curl -L https://www.opscode.com/chef/install.sh | bash</span>
 Thank you for installing Chef!</pre>
 
         <p>Confirm Chef has successfully installed.</p>
 
-        <pre class="terminal">root@intro:~# chef-client -v
+        <pre class="terminal">root@intro:~# <span class="cmd">chef-client -v</span>
 <span class="muted">...</span>
 Chef: 11.4.0
 </pre>
@@ -92,34 +93,33 @@ Chef: 11.4.0
 
         <p>How do we do that? We write our first Chef cookbook. But before we do that we should setup a file structure that will help us organise our various Chef files. Opscode, the makers of Chef provide one. They call it simply the Chef Repository.</p>
 
-        <pre class="terminal">root@intro:~# wget http://github.com/opscode/chef-repo/tarball/master
-root@intro:~# tar -zxf master
-root@intro:~# mv opscode-chef-repo* chef-repo
-root@intro:~# rm master
-</pre>
+        <pre class="terminal">root@intro:~# <span class="cmd">wget http://github.com/opscode/chef-repo/tarball/master</span>
+root@intro:~# <span class="cmd">tar -zxf master</span>
+root@intro:~# <span class="cmd">mv opscode-chef-repo* chef-repo</span>
+root@intro:~# <span class="cmd">rm master</span></pre>
       
         <p>If we look inside the chef-repo directory we can see the following:</p>
 
-        <pre class="terminal">root@intro:~# cd chef-repo/
-root@intro:~/chef-repo# ls
+        <pre class="terminal">root@intro:~# <span class="cmd">cd chef-repo/</span>
+root@intro:~/chef-repo# <span class="cmd">ls</span>
 <span class="folder">certificates</span>  chefignore  <span class="folder">config</span>  <span class="folder">cookbooks</span>  <span class="folder">data_bags</span>  <span class="folder">environments</span>  LICENSE  Rakefile
 README.md <span class="folder">roles</span></pre>
       
         <p>Our Chef cookbook should unsurprisingly reside within the cookbooks directory. We're going to call it "phpapp". We can use the command <strong>knife</strong> to help us manage our cookbooks. First we should tell knife where to find our cookbooks directory.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# mkdir .chef
-root@intro:~/chef-repo# echo "cookbook_path [ '/root/chef-repo/cookbooks' ]" > .chef/knife.rb</pre>
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">mkdir .chef</span>
+root@intro:~/chef-repo# <span class="cmd">echo "cookbook_path [ '/root/chef-repo/cookbooks' ]" > .chef/knife.rb</span></pre>
 
         <p>That creates a simple configuration file for knife which tells knife to use the cookbook directory inside our Chef Repository. Now we'll ask knife to create our "phpapp" cookbook.</p>
-        <pre class="terminal">root@intro:~/chef-repo# knife cookbook create phpapp
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">knife cookbook create phpapp</span>
 ** Creating cookbook phpapp
 ** Creating README for cookbook: phpapp
 ** Creating CHANGELOG for cookbook: phpapp
 ** Creating metadata for cookbook: phpapp</pre>
   
         <p>So let's look at what knife has created.</p>
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp
-root@intro:~/chef-repo/cookbooks/phpapp# ls
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span>
+root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">ls</span>
 <span class="folder">attributes</span>  CHANGELOG.md  <span class="folder">definitions</span>  <span class="folder">files</span>  <span class="folder">libraries</span>  metadata.rb  <span class="folder">providers</span>  README.md<br><span class="folder">recipes</span>  <span class="folder">resources</span>  <span class="folder">templates</span></pre>
   
         <p>So now we'd need write our cookbook to install and configure Apache, MySQL and PHP. How do we do that? Well, thanks to the open source nature of Chef, we don't have to. Welcome to the <a href="http://community.opscode.com/cookbooks" target="_blank">Opscode Community</a> cookbook site.</p>
@@ -128,21 +128,21 @@ root@intro:~/chef-repo/cookbooks/phpapp# ls
 
         <p>Here you'll find lots of well crafted, tested and battle hardened cookbooks that will do most of the work for you. Think of them as libraries you will use inside your code. We'll start with the <strong>apache2</strong> cookbook. There's no need to manually download it from the community site, knife has this functionality built in. We'll also install the <strong>apt</strong> cookbook. This will help us ensure chef-solo does an apt-get update before we install any packages.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ..
-root@intro:~/chef-repo/cookbooks# knife cookbook site download apache2
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ..</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download apache2</span>
 Downloading apache2 from the cookbooks site at version 1.6.0 to /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf apache2*
-root@intro:~/chef-repo/cookbooks# rm apache2*.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download apt
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf apache2*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm apache2*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download apt</span>
 Downloading apt from the cookbooks site at version 1.9.0 to /root/chef-repo/cookbooks/apt-1.9.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/apt-1.9.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf apt*
-root@intro:~/chef-repo/cookbooks# rm apt*.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf apt*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm apt*.tar.gz</span></pre>
 
         <p>Let's go back into our cookbook.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
 
         <p>Open metadata.rb in your favourite text editor. Vim or nano are both available by default on Ubuntu. We suggest using nano if you're not used to Vim. So type "nano metadata.rb".</p>
 
@@ -174,7 +174,7 @@ version          '0.1.0'
 
         <p>Okay. Let's see if what we've got so far works! Go back to the chef-repo directory.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..</pre>
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span></pre>
 
         <p>Create a new file called solo.rb in your text editor.
 
@@ -191,7 +191,7 @@ cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
         <h3>Our first Chef run</h3>
 
-        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 14 resources updated</pre>
@@ -204,22 +204,22 @@ Chef Client finished, 14 resources updated</pre>
 
         <p>Next we'll setup MySQL. As the community site has a cookbook for MySQL, the process is similar to Apache. Again we'll ask knife to fetch the cookbook from the community site for us.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
-root@intro:~/chef-repo/cookbooks# knife cookbook site download mysql 
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql</span>
 Downloading mysql from the cookbooks site at version 2.1.2 to /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf mysql*
-root@intro:~/chef-repo/cookbooks# rm mysql-*.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf mysql*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm mysql-*.tar.gz</span></pre>
 
         <p>So let's install MySQL then. We want to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
     
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd mysql/recipes/
-root@intro:~/chef-repo/cookbooks/mysql/recipes# ls
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd mysql/recipes/</span>
+root@intro:~/chef-repo/cookbooks/mysql/recipes# <span class="cmd">ls</span>
 client.rb  default.rb  ruby.rb  server_ec2.rb  server.rb</pre>
 
         <p>There's a client recipe and a server recipe. We'll need to include both then. Go back to our cookbook.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/mysql/recipes# cd ../../phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/mysql/recipes# <span class="cmd">cd ../../phpapp</span></pre>
 
         <p>Open metadata.rb in your text editor.</p>
 
@@ -255,8 +255,8 @@ include_recipe "mysql::server"</strong>
 
         <h3>Our second Chef run</h3>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 Compiling Cookbooks...
 [2013-02-11T21:47:33+00:00] ERROR: Running exception handlers
@@ -294,22 +294,22 @@ suggests "windows"</pre>
 
         <p>There are some good tools available to help you manage cookbooks and dependences which we'll cover in later chapters but we'll just download the required cookbooks using knife for now.</p>
     
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks
-root@intro:~/chef-repo/cookbooks# knife cookbook site download openssl
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download openssl</span>
 Downloading openssl from the cookbooks site at version 1.0.0 to /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf openssl*.tar.gz
-root@intro:~/chef-repo/cookbooks# rm openssl*.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download build-essential
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf openssl*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm openssl*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download build-essential</span>
 Downloading build-essential from the cookbooks site at version 1.3.4 to /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf build-essential-*.tar.gz
-root@intro:~/chef-repo/cookbooks# rm build-essential-*.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf build-essential-*.tar.gz></span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm build-essential-*.tar.gz</span></pre>
         
         <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
     
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd ..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd ..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 Compiling Cookbooks...
 [2013-02-12T18:44:18+00:00] WARN: Cloning resource attributes for service[apache2] from prior resource (CHEF-3694)
@@ -326,31 +326,31 @@ Compiling Cookbooks...
         
         <p>Add the code in green. Let's re-run chef-solo.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json   
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 14 resources updated</pre>
 
         <p>Much more successful, we now have MySQL. Now to install PHP. You guessed it, there's a community cookbook for PHP.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/
-root@intro:~/chef-repo/cookbooks# knife cookbook site download php
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download php</span>
 Downloading php from the cookbooks site at version 1.1.8 to /root/chef-repo/cookbooks/php-1.1.8.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/php-1.1.8.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf php*.tar.gz
-root@intro:~/chef-repo/cookbooks# rm php*.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf php*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm php*.tar.gz</span></pre>
 
         <p>The php cookbook also depends on the xml cookbook, so let's grab that one.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# knife cookbook site download xml
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download xml</span>
 Downloading xml from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf xml-*.tar.gz
-root@intro:~/chef-repo/cookbooks# rm xml-*.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf xml-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm xml-*.tar.gz</span></pre>
 
         <p>Let's use the php cookbook in our cookbook.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
 
         <p>Next we add the new php cookbook as a dependency for our cookbook. Open metadata.rb.</p>
 
@@ -390,7 +390,7 @@ end</span></pre>
 
         <p>Add the code in green. Here we add the PHP default recipe, one to install the PHP MySQL extension and one to enable the Apache PHP module mod_php. We also enable the default site so we can check our installation has worked. Save the file and we're good to run chef-solo again to install all of those things.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span>
 root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
 Starting Chef Client, version 11.4.0
 ...
@@ -410,7 +410,7 @@ Chef Client finished, 8 resources updated</pre>
 
         <p>We can see MySQL is installed. Let's delete the test file. </p>
 
-        <pre class="terminal">root@intro:~/chef-repo# rm /var/www/test.php</pre>
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">rm /var/www/test.php</span></pre>
 
         <h3>Idempotence</h3>
 
@@ -420,25 +420,25 @@ Chef Client finished, 8 resources updated</pre>
 
         <p>Before we setup our database we need to fetch a final few cookbooks. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# knife cookbook site download database
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download database</span>
 Downloading database from the cookbooks site at version 1.3.12 to /root/chef-repo/cookbooks/database-1.3.12.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/database-1.3.12.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf database-*.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download postgresql
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf database-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download postgresql</span>
 Downloading postgresql from the cookbooks site at version 2.2.2 to /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/postgresql-2.2.2.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf postgresql-*.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download xfs
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf postgresql-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download xfs</span>
 Downloading xfs from the cookbooks site at version 1.1.0 to /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf xfs-*.tar.gz
-root@intro:~/chef-repo/cookbooks# knife cookbook site download aws
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf xfs-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download aws</span>
 Downloading aws from the cookbooks site at version 0.100.6 to /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
-root@intro:~/chef-repo/cookbooks# tar zxf aws-*.tar.gz
-root@intro:~/chef-repo/cookbooks# rm *.tar.gz</pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf aws-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm *.tar.gz</span></pre>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks# cd phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
 
         <p>We'll now add the new dependencies to our cookbook. Open metadata.rb.</p>
 
@@ -506,8 +506,8 @@ end</span></pre>
     
         <p>Replace 'phpapp' with node['phpapp']['database']. Save the file. Let's see run chef-solo again and see if our changes are successful.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+        <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0</pre>
 
         <p>And that's failed. Let's look at the key parts of the message we received; highlighted bellow in yellow.</p>
@@ -544,7 +544,7 @@ Relevant File Content:
 
         <p>The missing database attribute can be defined in a few places. We could define the attribute in web.json like we did with the MySQL ones but that makes our cookbook unnecessarily difficult to use. We want to provide the option to use a database called something other than <strong>phpapp</strong> but we should really provide a default.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
     
         <p>We now create called attributes/default.rb. Open it in your editor.</p>
 
@@ -552,15 +552,15 @@ Relevant File Content:
 
         <p>Add the code in green and save the file.</p>
 
-        <pre class="terminal">root@intro:~/chef-rep/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+        <pre class="terminal">root@intro:~/chef-rep/cookbooks/phpapp# <span class="cmd">cd ../..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 7 resources updated</pre>
 
         <p>We've got a database! Let's create the database user.</p>
 
-        <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+        <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
         <p>Open recipes/default.rb.</p>
 
@@ -605,7 +605,7 @@ end</span></pre>
 
     <p>Add the code in green and save the file.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..</pre>
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span></pre>
 
     <p>Open web.json.</p>
     
@@ -617,7 +617,7 @@ end</span></pre>
 
     <p>Add the code in green and save the file. Let's check our recipe still works.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 2 resources updated</pre>
@@ -629,7 +629,7 @@ Chef Client finished, 2 resources updated</pre>
     <p>We want to setup each new Wordpress build with the latest version so we'll fetch it from Wordpress.org. But how? 
     Fortunately enough, Chef comes with the resource <a href="http://docs.opscode.com/resource_remote_file.html" target="_blank">remote_file</a> which will do just that for us.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
     <p>Open up recipes/default.rb and add the following to the end of the recipe.</p>
 
@@ -666,8 +666,8 @@ end</span></pre>
 
     <p>Add the line in green to the end of the list of attributes and save the file. Now we'll see if Wordpress is downloaded.</p>
 
-    <pre class="terminal">root@intro:~/chef-rep/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+    <pre class="terminal">root@intro:~/chef-rep/cookbooks/phpapp# <span class="cmd">cd ../..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 9 resources updated</pre>
@@ -691,7 +691,7 @@ Chef Client finished, 9 resources updated</pre>
 
     <p>Let's see if the files are there.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# ls /var/www/phpapp
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">ls /var/www/phpapp</span>
 index.php        <span class="folder">wp-admin</span>              <span class="folder">wp-content</span>         wp-load.php      wp-signup.php
 license.txt      wp-blog-header.php    wp-cron.php        wp-login.php     wp-trackback.php
 readme.html      wp-comments-post.php  <span class="folder">wp-includes</span>        wp-mail.php      xmlrpc.php
@@ -699,7 +699,7 @@ wp-activate.php  wp-config-sample.php  wp-links-opml.php  wp-settings.php</pre>
 
     <p>Good so we can see that works. But is our recipe idempotent? Let's re-run chef-solo and see.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 6 resources updated</pre>
@@ -716,7 +716,7 @@ Chef Client finished, 6 resources updated</pre>
 
     <p>Wordpress keeps it's configuration in a file called wp-config.php. We need to create that file and put database names and user access details inside it. Chef provides a resource called <a href="http://docs.opscode.com/resource_template.html" target="_blank">template</a> that can do just that.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
     <p>Wordpress requires some random salt strings for security. It would not be wise for us to specify a default in our cookbook so instead of specifying them in web.json, we can use a service provided by Wordpress to generate a file containing them.</p>
 
@@ -792,8 +792,8 @@ end</span></pre>
 
     <p>Let's run chef-solo again and check our recipe.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..
-root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span>
+root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 8 resources updated</pre>
@@ -802,7 +802,7 @@ Chef Client finished, 8 resources updated</pre>
 
     <p>We need to define a template for the Apache VirtualHost that will run Wordpress. We'll create that now.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo# cd cookbooks/phpapp</pre>
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
     <p>Create templates/default/site.conf.erb</p>
 
@@ -937,7 +937,7 @@ default["phpapp"]["path"] = "/var/www/phpapp"
 
     <p>Add the new attribute and save the file.</p>
 
-    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# cd ../..</pre>
+    <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ../..</span></pre>
 
     <h3>Overriding a default attribute</h3>
 
@@ -957,7 +957,7 @@ default["phpapp"]["path"] = "/var/www/phpapp"
 
     <h3>A working Wordpress installation!</h3>
 
-    <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+    <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 11 resources updated</pre>
@@ -982,14 +982,14 @@ Chef Client finished, 11 resources updated</pre>
         <li>Run chef-solo.</li>
     </ol>
     
-    <pre class="terminal">root@intro:~# curl -L https://www.opscode.com/chef/install.sh | bash
-root@intro:~# wget http://gettingstartedwithchef.com/downloads/cp1.tgz
-root@intro:~# tar zxf cp1.tgz
-root@intro:~# cd chef-repo</pre>
+    <pre class="terminal">root@intro:~# <span class="cmd">curl -L https://www.opscode.com/chef/install.sh | bash</span>
+root@intro:~# <span class="cmd">wget http://gettingstartedwithchef.com/downloads/cp1.tgz</span>
+root@intro:~# <span class="cmd">tar zxf cp1.tgz</span>
+root@intro:~# <span class="cmd">cd chef-repo</span></pre>
 
     <p>Add this point edit web.json and enter your server name again if required. Now run chef-solo.</p>
 
-     <pre class="terminal">root@intro:~/chef-repo# chef-solo -c solo.rb -j web.json
+     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 57 resources updated</pre>
