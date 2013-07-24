@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Getting started with Chef</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn how to configure, manage and provision cloud servers with Chef by following practical examples with real world applications.">
+    <meta name="author" content="Andy Gale for Hello Future Ltd">
+
+    <!-- CSS -->
+    <link href="assets/cerulean/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/base.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+<!--     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="..`icon.png"> -->
+  </head>
+
+  <body>
+
+    <div id="wrap">
+       <div class="container">
+            <div class="page-header">
+                <h1>Getting started with Chef</h1>
+                <div>By Andy Gale</div>
+            </div>
+
+            <p><a href="index.html">&lt;&lt; Chapter 1: Introducing Chef</a></p>
+
+            <h2>2. Introducing Chef Server</h2>
+
+            <p>This chapter will extend on the building blocks of the previous chapter and introduce better ways of working than just SSH and using Chef in a client and server model.</p>
+
+            <h3>Chef client and server</h3>
+
+            <p>As well as using Chef on a single box with <strong>chef-solo</strong> it is also possible to use Chef in a client/server model. The Chef server stores and distributes our cookbooks and other Chef configuration when contacted by a client running the <strong>chef-client</strong> command. The <strong>chef-client</strong> command is the client/server version of <strong>chef-solo</strong>.</p>
+
+            <p>Storing the configuration inside a Chef Server instead of inside a file like <em>web.json</em> as we did in the previous chapter allows us to easily manage the configuration of our servers from our workstation instead. This has an obvious advantage when dealing with a large number of servers and allows us to easily provision new servers with <strong>knife</strong>.</p>
+
+            <h3>Node</h3>
+
+            <p>At this point it's prudent to introduce you to some Chef terminology. A computer, virtual machine or cloud instance you are running <strong>chef-solo</strong> or <strong>chef-client</strong> on is called a <strong>node</strong>. This differs slightly from what Chef calls a <strong>client</strong>. A client can also be your workstation that you don't run <strong>chef-client</strong> on but do use <strong>knife</strong> to manage your Chef server with.</p>
+
+            <h3>Workstation setup</h3>
+
+            <div class="alert alert-block"><strong>Windows users!</strong> Sorry, Windows workstation instructions will be added to this chapter shortly.</div>
+
+            <p>We will now setup your workstation so you can edit you Chef recipes in your favourite text editor.</p>
+
+            <p>Install <strong>curl</strong> if it is not already installed. Then install Chef.</p>
+
+            <h3>Install Chef</h3>
+
+            <pre class="terminal">$ <span class="cmd">curl -L https://www.opscode.com/chef/install.sh | sudo bash</span>
+Thank you for installing Chef!</pre>
+
+            <p>Save some typing by adding the various Chef commands to your $PATH.</p>
+            
+            <pre class="terminal">$ <span class="cmd">echo 'export PATH="/opt/chef/embedded/bin:$PATH"' &gt;&gt; ~/.bash_profile &amp;&amp; source ~/.bash_profile</span></pre>
+
+            <h3>Hosted Chef</h3>
+
+            <p>Opscode, the makers of Chef, provide a service called <a href="http://www.opscode.com/hosted-chef/" target="_blank">Hosted Chef</a> which is a Chef Server as a service. They offer a free tier which is good for 5 nodes so is ideal to help us get started.</p>
+
+            <p>Follow the instructions to sign up on the website and log in.</p>
+
+            <p>Now we've signed up we will download some files that will allow us to use our Hosted Chef account with knife. Visit <a href="https://manage.opscode.com/organizations" target="_blank">https://manage.opscode.com/organizations</a>.</p>
+
+
+            <p><img class="img-rounded" alt="Hosted Chef - Organizations page screenshot" src="assets/img/hosted-chef-organizations.png" /></p>
+
+            <p>Click the <strong>Generate knife config</strong> link. Download the knife.rb file that is generated.</p>
+
+            <p>Then click the <strong>Regenerate validation key</strong> link. Press OK to the alert and download the .pem file.</p>
+
+            <p>Now visit <a href="https://www.opscode.com/account/password" target="_blank">https://www.opscode.com/account/password</a>.</p>
+
+            <p><img class="img-rounded" alt="Opscode reset user key screenshot" src="assets/img/opscode-reset-key.png" /></p>
+
+            <p>Press the <strong>Get a new key</strong> button and download the .pem file.</p>
+
+            <h3>Using Hosted Chef</h3>
+
+            <p>We'll now use Hosted Chef along with the chef repository we made in the previous chapter. Firstly, let's download our chef repository.</p>
+
+            <pre class="terminal">$ <span class="cmd">wget http://gettingstartedwithchef.com/downloads/cp1.tgz</span>
+--2013-06-09 13:36:15--  http://gettingstartedwithchef.com/downloads/cp1.tgz
+Resolving gettingstartedwithchef.com (gettingstartedwithchef.com)... 80.68.93.116
+Connecting to gettingstartedwithchef.com (gettingstartedwithchef.com)|80.68.93.116|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 300046 (293K) [text/plain]
+Saving to: ‘cp1.tgz’
+
+100%[===============================================================================>] 300,046     1.78MB/s   in 0.2s   
+
+2013-06-09 13:36:15 (1.78 MB/s) - ‘cp1.tgz’ saved [300046/300046]
+$ <span class="cmd">tar zxf cp1.tgz</span>
+$ <span class="cmd">cd chef-repo</span></pre>
+
+        <p>We now have everything we need, so let's start using Hosted Chef. Firstly, we need to tell knife to use Hosted Chef. To do this we need to copy the files we just downloaded from Hosted Chef to our repository.</p>
+ 
+        <pre class="terminal">$ <span class="cmd">mv ~/Downloads/*.pem .chef/</span>
+$ <span class="cmd">mv ~/Downloads/knife.rb .chef/</span></pre>
+
+        <p>Let's check that knife can talk to Hosted Chef.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife client list</span>
+<span class="code2highlight">org_name</span>-validator</pre>
+
+        <p>&quot;org_name&quot; will be whatever you entered as your organisation name when signing up for Hosted Chef.</p>
+
+        <h3>Uploading Cookbooks</h3>
+
+        <p>Before we can configure our node with <strong>chef-client</strong>, we need to upload our cookbooks to the Chef server. We do that with <strong>knife</strong>.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife cookbook upload --all</span>
+Uploading apache2      [1.6.0]
+Uploading apt          [1.9.0]
+Uploading aws          [0.100.6]
+Uploading build-essential [1.3.4]
+Uploading database     [1.3.12]
+Uploading mysql        [2.1.2]
+Uploading openssl      [1.0.2]
+Uploading php          [1.1.8]
+Uploading phpapp       [0.1.0]
+Uploading postgresql   [2.2.2]
+Uploading xfs          [1.1.0]
+Uploading xml          [1.1.2]
+Uploaded all cookbooks.</pre>
+
+        <h3>Roles</h3>
+
+        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role create phpapp</span></pre>
+        
+        <p>You may receive the following error if you do not have an EDITOR environment variable set.</p>
+
+        <pre class="terminal"><span class="chef-error">ERROR:</span> RuntimeError: Please set EDITOR environment variable</pre>
+
+        <p>You can resolve this quickly with the <strong>--editor</strong> option. e.g. <strong>--editor vi</strong> or <strong>--editor nano</strong> etc.</p> 
+        
+        <p>We are then presented with the basic structure of the role as a JSON file.</p>
+
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>
+
+        <p>We'll go through what the fields actually mean. The <strong>name</strong> you can probably guess - the name of the role. It's a good idea to put something descriptive in the <strong>description</strong> field. You may remember that we discussed attributes in the last chapter, <strong>default_attributes</strong> allows us to set attributes and <strong>override_attributes</strong> lets us specify attributes that override attributes defined as defaults elsewhere. We've already created a <strong>run_list</strong> in our JSON file in the last chapter so let's add that first. It's safe to ignore the fields that have not been mentioned for now.</p>
+
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    <span class="code2add">"recipe[apt]", "recipe[phpapp]"</span>
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>
+
+        <p>Enter our run list, highlighted in green. We should now specify some attributes. We don't need to specify the attributes for the <strong>mysql</strong> cookbook as it creates secure random passwords automatically in <strong>chef-client</strong> mode. Our <strong>phpapp</strong> cookbook requires us to specify a password attribute so let's add that to <strong>default_attributes</strong>.</p>
+
+        <pre class="editor">{
+  "name": "phpapp",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    <span class="code2add">"phpapp": {"db_password": "212b09752d173876a84d374333ae1ffe"}</span>
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[apt]", "recipe[phpapp]"
+  ],
+  "env_run_lists": {
+  }
+}
+</pre>  
+
+        <p>Add the code in green above. Save the file. The role will be uploaded to Hosted Chef and knife will display the following message.</p>
+
+        <pre class="terminal">Created role[phpapp]</pre>
+
+        <p>Let's confirm the role is on the server.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role list</span>
+phpapp</pre>
+  
+        <p>Finally, we should download the role from the server and place it into our roles directory for safe keeping.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role show phpapp -d -Fjson > roles/phpapp.json</span></pre>
+
+        <p>Having the file in our chef repository allows us to edit the role at our leisure and check it into version control systems such as Git, something we'll get to in a later chapter. We can upload the file to Hosted Chef again using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife role from file roles/phpapp.json</span>
+Updated Role phpapp!</pre>
+
+        <p>We're now ready to bootstrap our new node with knife.</p>
+
+        <h3>Bootstrapping a node with Knife</h3>
+
+        <p><a href="https://vimeo.com/61380630" target="_blank">Create a new Ubuntu instance in the Rackspace Cloud</a> or use your virtual machine software to create a new Ubuntu box.</p>
+
+        <p>If you are using a new Rackspace Cloud instance replace &quot;<strong>password</strong>&quot; with the root password and &quot;<strong>hostname</strong>&quot; with it's hostname or IP address and run the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --ssh-user root --ssh-password <span class="code2highlight">password</span> <span class="code2highlight">hostname</span></span></pre>
+
+        <p>Otherwise the <strong>knife bootstrap</strong> command you need will be specific to your setup. To use a ssh key and sudo before executing the bootstrap you might use the following command, replacing <strong>&lt;hostname&gt;</strong> with the hostname or IP address of the machine you intend to bootstrap.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --sudo <span class="code2highlight">hostname</span></span></pre>     
+
+        <p>You'll see some output along these lines.</p>
+
+        <pre class="terminal">Bootstrapping Chef on intro.hellofutu.re
+..
+<span class="code2remote">intro.hellofutu.re</span>
+<span class="code2remote">intro.hellofutu.re</span> Chef Client finished, 61 resources updated
+<span class="code2remote">intro.hellofutu.re</span></pre>
+
+        <p>And if you visit your new node in your web browser you'll see the following.</p>
+
+        <p><img class="img-rounded" src="assets/img/hello-wordpress.png" /></p>
+  
+        <p>That's fairly impressive I'm sure you'll agree! But it gets better. We can use knife to create the cloud instances for us as well!</p>
+
+        <h3>Creating cloud instances with Knife</h3>
+
+        <p>Knife plugins extend its functionality and make knife even more useful! Amongst other things, knife plugins allow us to automatically create cloud instances before we bootstrap them. You can view the <a href="http://docs.opscode.com/plugin_knife.html" target="_blank">full list of official knife plugins over at docs.opscode.com</a>.</p>
+
+
+        </p>
+
+        <h4>Rackspace Cloud</h4>
+
+        <p>We'll start by creating a Rackspace Cloud instance. First we need to install the <strong>knife-rackspace</strong> plugin.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-rackspace</span>
+...
+Successfully installed knife-rackspace-0.7.0</pre>
+
+        <p>Now we need to set some details in .chef/knife.rb (which is inside your Chef Repository). Open it up in your favourite text editor.</p>
+
+<pre class="editor"><span class="code2add">knife[:rackspace_api_username] = "testorg"
+knife[:rackspace_api_key] = "APIKEY"</span></pre>
+
+        <p>Add the green lines above. Remember to replace <em>testorg</em> and <em>APIKEY</em> with your Rackspace username and API key.</p>
+
+        <p>If you don't live in America you will need to specify an alternative authentication URL. Below is an example for the UK. Valid regions are: "dfw" "ord" "lon" and "syd".</p>
+
+        <pre class="editor">knife[:rackspace_api_username] = "testorg"
+knife[:rackspace_api_key] = "APIKEY"
+<span class="code2add">knife[:rackspace_auth_url] = "https://lon.identity.api.rackspacecloud.com/v2.0"</span></pre>
+  
+        <p>Save knife.rb. We can test to see if that's worked using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace flavor list</span><strong>
+ID  Name                          VCPUs   RAM     Disk</strong>
+2   512MB Standard Instance  1      512    20 GB  
+3   1GB Standard Instance    1      1024   40 GB  
+4   2GB Standard Instance    2      2048   80 GB  
+5   4GB Standard Instance    2      4096   160 GB 
+6   8GB Standard Instance    4      8192   320 GB 
+7   15GB Standard Instance   6      15360  620 GB 
+8   30GB Standard Instance   8      30720  1200 GB</pre>
+
+        <p>We can get a list of available images (operating systems) with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace image list</span><strong>
+ID                                          Name</strong>
+32b7d027-8a40-458b-9e73-bd719d660df6  Arch 2013.6
+e0ed4adb-3a00-433e-a0ac-a51f1bc1ea3d  CentOS 6.4
+81877a6e-9e87-4b1f-93f3-b176e25f3c4a  Debian 7 (Wheezy)
+f3a23d0a-de1b-4eb7-994f-5f0de9d8d7a0  Fedora 19 (Schrodinger's Cat)
+ccaf99bc-472a-46ea-a125-d3ecfca66695  FreeBSD 9.1
+bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
+8958846f-679b-454e-9232-20d3792fc5d7  OpenSUSE 12.3
+16e6c0ae-f881-4180-95b0-3450fe3f8e96  Red Hat Enterprise Linux 6.4
+23cebbc9-3219-4a27-9210-d63e1af7181b  Ubuntu 13.04 (Raring Ringtail)
+48df4181-040e-4821-8723-d9e4ba908d2f  Windows Server 2008 R2 SP1
+</pre>          
+
+        <p>We can now provision and bootstrap a server with the following command. From the commands above we know we want a flavor of "2" and the Ubuntu 13.04 image which is catchily entitled "23cebbc9-3219-4a27-9210-d63e1af7181b".</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp]"</span>
+...</pre>
+
+        <p>After a while your instance will be created, bootstrapped and Chef will be run and something similar to below will be displayed.</p>
+
+        <pre class="terminal"><span class="code2remote">192.168.9.199</span> Chef Client finished, 61 resources updated
+<span class="code2remote">192.168.9.199</span>
+
+<span class="code2remote">Instance ID</span>: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2remote">Host ID</span>: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="code2remote">Name</span>: rs-xxxxxxxxxxxxxxxxx
+<span class="code2remote">Flavor</span>: 512MB Standard Instance
+<span class="code2remote">Image</span>: Ubuntu 13.04 (Raring Ringtail)
+<span class="code2remote">Metadata</span>: []
+<span class="code2remote">Public DNS Name</span>: 192-168-9-199.static.cloud-ips.com
+<span class="code2remote">Public IP Address</span>: 192.168.9.199
+<span class="code2remote">Private IP Address</span>: 10.9.3.199
+<span class="code2remote">Password</span>: xxxxxxxxxxxx
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]
+</pre>
+
+        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the Wordpress install page.</p>
+
+        <p>We can even use knife to clean up our servers. Get a list of servers with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server list</span><strong>
+Instance ID  Name  Public IP       Private IP    Flavor  Image                         State</strong>
+xxxxxxxx   rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
+
+        <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value under Instance ID from the server list command above.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife rackspace server delete --purge <span class="code2highlight">INSTANCE_ID</span></span>
+<span class="code2remote">Instance ID</span>: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2remote">Host ID</span>: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="code2remote">Name</span>: rs-xxxxxxxxxxxxxxxxx
+<span class="code2remote">Flavor</span>: 512MB Standard Instance
+<span class="code2remote">Image</span>: Ubuntu 13.04 (Raring Ringtail)
+<span class="code2remote">Public IP Address</span>: 192.168.9.199
+<span class="code2remote">Private IP Address</span>: 10.9.1.199
+
+Do you really want to delete this server? (Y/N) y
+<span class="code2highlight">WARNING:</span> Deleted server xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+<span class="code2highlight">WARNING:</span> Deleted node rs-xxxxxxxxxxxxxxxxx
+<span class="code2highlight">WARNING:</span> Deleted client rs-xxxxxxxxxxxxxxxxx</pre>
+
+        <h4>Amazon Cloud</h4>
+
+        <p>We can also use <strong>knife</strong> to bootstrap Amazon EC2 instances. First install the plugin.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-ec2</span>
+...
+Successfully installed knife-ec2-0.6.4</pre>
+
+        <p>You need to obtain the following information for your Amazon AWS account. It can all be found or set-up inside the Amazon AWS console.</p>
+
+        <ul>
+          <li>access key id</li>
+          <li>secret access key</li>
+          <li>name of the ssh key you want to use</li>
+          <li>an Ubuntu 12.04 or 13.04 AMI</li>
+          <li>the AWS region you want to use</li>
+          <li>the name of a security group that allows SSH and web access</li>
+        </ul>
+
+        <p>We should now configure knife with those details. Open chef/knife.rb.</p> 
+
+        <pre class="editor"><span class="code2add">knife[:aws_access_key_id]  = "XXXXXXXXXXXXXXXXXXXX"
+knife[:aws_secret_access_key] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+knife[:aws_ssh_key_id] = "sshkey"</span></pre>
+
+        <p>Add the lines in green, entering your access key id, secret access key and ssh key name without .pem. Save the file.</p>
+
+        <p>We can now access a list of cloud instances with the following command. Cloud servers will be listed whether they have been created with knife or not.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server list</span>
+<strong>Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State</strong></pre>
+
+        <p>I have no servers listed. This is because my servers reside in the region <em>eu-west-1</em>. We can specify a region by using the option <em>--region</em>.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server list --region eu-west1</span><strong>
+Instance ID  Name      Public IP  Private IP  Flavor    Image         SSH Key Security Groups  State</strong>
+i-xxxxxxxx   server01  x.x.x.x    x.x.x.x     m1.small  ami-3d160149  sshkey  www, default     <span class="action">running</span></pre>
+
+
+        <p>I can use knife to provision and bootstrap a cloud instance with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span>
+...</pre>
+
+        <p>After a while we'll see the following result.</p>
+
+        <pre class="terminal"><span class="code2remote">ec2-x-x-x-x.eu-west-1.compute.amazonaws.com</span> Chef Client finished, 57 resources updated
+<span class="code2remote">ec2-x-x-x-x.eu-west-1.compute.amazonaws.com</span>
+
+<span class="code2remote">Instance ID</span>: i-xxxxxxxx
+<span class="code2remote">Flavor</span>: m1.small
+<span class="code2remote">Image</span>: ami-3d160149
+<span class="code2remote">Region</span>: eu-west-1
+<span class="code2remote">Availability Zone</span>: eu-west-1a
+<span class="code2remote">Security Groups</span>: www, default
+<span class="code2remote">Security Group Ids</span>: default
+<span class="code2remote">Tags</span>: {"Name"=>"server01"}
+<span class="code2remote">SSH Key</span>: sshkey
+<span class="code2remote">Root Device Type</span>: ebs
+<span class="code2remote">Root Volume ID</span>: vol-xxxxxxxx
+<span class="code2remote">Root Device Name</span>: /dev/sda1
+<span class="code2remote">Root Device Delete on Terminate</span>: true
+<span class="code2remote">Public DNS Name</span>: ec2-x-x-x-x.eu-west-1.compute.amazonaws.com
+<span class="code2remote">Public IP Address</span>: x.x.x.x
+<span class="code2remote">Private DNS Name</span>: ip-x-x-x-x.eu-west-1.compute.internal
+<span class="code2remote">Private IP Address</span>: x.x.x.x
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]</pre>
+
+        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the Wordpress install page.</p>
+
+        <p>You can also delete instances you no longer need with knife. Using the instance ID from the output of the server create command above, we can delete the instance we just made using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife ec2 server delete --purge --region eu-west-1 i-xxxxxxxx --node-name server01</span>
+<span class="code2remote">Instance ID</span>: i-xxxxxxxx
+<span class="code2remote">Flavor</span>: m1.small
+<span class="code2remote">Image</span>: ami-xxxxxxxx
+<span class="code2remote">Region</span>: eu-west-1
+<span class="code2remote">Availability Zone</span>: eu-west-1a
+<span class="code2remote">SSH Key</span>: sshkey
+<span class="code2remote">Root Device Type</span>: ebs
+
+Do you really want to delete this server? (Y/N) y
+<span class="code2highlight">WARNING</span>: Deleted server i-xxxxxxxx
+<span class="code2highlight">WARNING</span>: Deleted node server01
+<span class="code2highlight">WARNING</span>: Deleted client server01</pre>
+
+        <p>The command used some extra options, here's why:</p>
+
+        <dl>
+          <dt>--purge</dt>
+          <dd>ensures the server is also deleted from our Hosted Chef account</dd>
+          <dt>--node-name</dt>
+          <dd>required when using <em>--purge</em> if the server name is different from the instance ID</dd>
+          <dt>--region</dt>
+          <dd>specifies a region other than the default.</dd>
+        </dl>
+
+        <p>Hopefully you used either an Amazon or Rackspace cloud account and automatically bootstrapped a cloud instance using knife. In the next chapter we'll introduce some tools that will make manging and developing our cookbooks a lot easier and modify our Chef environment to work with multiple cloud instances.</p> 
+
+        </div>
+        <div id="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 08378526<br />
+        Created with <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> and <a href="http://bootswatch.com/cerulean/" target="_blank">Bootswatch Cerulean.</a></p>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38853378-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+    <script type="text/javascript" src="assets/js/lib/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/gswc.js"></script>
+  </body>
+</html>
+

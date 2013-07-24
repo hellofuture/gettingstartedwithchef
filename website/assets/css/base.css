@@ -94,13 +94,40 @@ p {
   color: blue;
 }
 
+.code2remote {
+  color: teal;
+}
+
+
+
 .code2highlight {
   font-weight: bold;
   color: yellow;
 }
 
+.alert .terminal {
+  text-shadow: none;
+}
+
+.chef-error { 
+  color: red;  
+  font-weight: bold;
+}
+
+.cmd {
+  font-weight: bold;
+}
+
 #footer .container {
   background: url(../img/hellovsmall.png) 0 10px no-repeat;
+}
+
+.tab-content {
+  padding: 0 20px;
+}
+
+.tab-content p {
+  margin: 0;
 }
 
 
