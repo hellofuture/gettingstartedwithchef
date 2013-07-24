@@ -228,13 +228,13 @@ Updated Role phpapp!</pre>
 
         <h3>Bootstrapping a node with Knife</h3>
 
-        <p><a href="https://vimeo.com/61380630" target="_blank">Create a new Ubuntu instance in the Rackspace Cloud</a> or use your virtual machine software to create a new Ubuntu box.</p>
+        <p>Now use your cloud control panel or your virtual machine software to create a new Ubuntu box.</p>
 
         <p>If you are using a new Rackspace Cloud instance replace &quot;<strong>password</strong>&quot; with the root password and &quot;<strong>hostname</strong>&quot; with it's hostname or IP address and run the following command.</p>
 
         <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --ssh-user root --ssh-password <span class="code2highlight">password</span> <span class="code2highlight">hostname</span></span></pre>
 
-        <p>Otherwise the <strong>knife bootstrap</strong> command you need will be specific to your setup. To use a ssh key and sudo before executing the bootstrap you might use the following command, replacing <strong>&lt;hostname&gt;</strong> with the hostname or IP address of the machine you intend to bootstrap.</p>
+        <p>Otherwise the <strong>knife bootstrap</strong> command you need will be specific to your setup. To use a ssh key and sudo before executing the bootstrap you might use the following command, replacing <strong>hostname</strong> with the hostname or IP address of the machine you intend to bootstrap. You can find more details of the options <a href="http://docs.opscode.com/knife_bootstrap.html" target="_blank">knife bootstrap</a> accepts in the documentation.</p>
 
         <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --json-attributes "{\"phpapp\": {\"server_name\": \"intro.hellofutu.re\"}}" --sudo <span class="code2highlight">hostname</span></span></pre>     
 
