@@ -45,14 +45,116 @@
             </ul>
             <h1>Getting started with Chef</h1>
             <div>By Andy Gale</div>
-        </div>
+          </div>
 
-            <ul class="pager">
-              <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
-            </ul>
+          <ul class="pager">
+            <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
+          </ul>
 
-            <h2>3. Managing multiple nodes with Chef</h2>
-        <p>This chapter extends our cookbook to work with multiple web sites and support multiple nodes. It introduces slightly more advanced Chef concepts like databags and search.</p>
+          <h2>3. Managing multiple nodes with Chef</h2>
+        
+          <p>This chapter extends our cookbook to work with multiple web sites and support multiple nodes. It introduces slightly more advanced Chef concepts like data bags and search.</p>
+
+          <h3>More than one WordPress site?</h3>
+
+          <p>Our <strong>phpapp</strong> cookbook is all very well but what if we want host more than one WordPress site on our web server? What if we want to add new sites in the future without changing our cookbook? We need somewhere to store this data somewhere and <a href="http://docs.opscode.com/essentials_data_bags.html" target="_blank">data bags</a> are ideal.</p>
+
+          <h3>Data bags</h3>
+
+          <p>A <em>data bag</em> is a collection of bits of JSON called <em>data bag items</em>, indexed by an ID, that Chef allows us to use and search in our recipes. Let's use knife to create our data bag.</p>
+
+          <p>Return to your chef-repo from the second chapter.</p>
+
+          <p>Type the following on your workstation to create a data bag called <strong>wp-sites</strong>.</p>
+
+          <p></p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites</span>
+Created data_bag[wp-sites]</pre>
+
+          <p>We'll call our site hosts <strong>website1.example.com</strong> and <strong>website2.example.com</strong>. Imaginative I know. Let's create our first website as the data bag item <strong>website1</strong>.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website1</span></pre>
+
+        
+          <p>You may receive the following error if you do not have an EDITOR environment variable set.</p>
+
+          <pre class="terminal"><span class="chef-error">ERROR:</span> RuntimeError: Please set EDITOR environment variable</pre>
+
+          <p>You can resolve this quickly with the <strong>--editor</strong> option. e.g. <strong>--editor vi</strong> or <strong>--editor nano</strong> etc.</p> 
+        
+          <p>Now we will add our per site configuration as JSON attributes. As well as a different hostname for each site, we want to be able to be able to configure a separate database name, user, host and password for each of the sites on our server so we'll include these details in our data bag.</p>
+
+          <pre class="editor">{
+  "id": "website1"<span class="code2add">,
+  "host": "website1.example.com",
+  "db_name": "website1",
+  "db_user": "website1",
+  "db_password": "212b09752d173876a84d374333ae1ffe",
+  "db_host": "localhost"</span>
+}</pre>
+        
+        <p>Add the code in green. Save the file. We now have our first data bag item. Let's create another.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website2</span></pre>
+
+        <p>Our second website will be similar to the first!</p>
+
+        <pre class="editor">{
+  "id": "website2"<span class="code2add">,
+  "host": "website2.example.com",
+  "db_name": "website2",
+  "db_user": "website2",
+  "db_password": "e50586910465ad767b36d11ec3fe323c",
+  "db_host": "localhost"</span>
+}</pre>
+
+        <p>Add the code in green. Save the file. We now have two data bags! Now time for something cool!</p>
+
+        <h3>Chef Shell</h3>
+
+        <p>As well as cookbook, recipes and knife, we can also use <a href="http://docs.opscode.com/chef_shell.html" target="_blank">chef-shell</a> to interact with Chef. We can use it to take our first steps interacting with our data bag.</p>
+
+        <pre class="terminal">$ <span class="cmd">chef-shell -c .chef/knife.rb</span>
+loading configuration: none (standalone session)
+Session type: standalone
+Loading...done.
+
+This is the chef-shell.
+ Chef Version: 11.x.x
+ http://www.opscode.com/chef
+ http://wiki.opscode.com/display/chef/Home
+
+run `help' for help, `exit' or ^D to quit.
+
+Ohai2u andy@computer!
+chef &gt;
+</pre>
+
+        <p>Those familiar with Python or the IRb (Interactive Ruby Shell) already know how you use <strong>chef-shell</strong>. We can just type cookbook code in and see what happens! Useful for experimenting or debugging.</p>
+
+        <p>Let's get our data bag from the Chef Server. From inside chef-shell.</p>
+
+        <pre class="terminal">chef &gt; <span class="cmd">databags('wp-sites').list</span>
+ => [data_bag_item["wp-sites", "website2", {"id"=>"website2", "host"=>"website2.example.com", "db_name"=>"website2", "db_user"=>"website2", "db_password"=>"e50586910465ad767b36d11ec3fe323c", "db_host"=>"localhost"}], data_bag_item["wp-sites", "website1", {"id"=>"website1", "host"=>"website1.example.com", "db_name"=>"website1", "db_user"=>"website1", "db_password"=>"212b09752d173876a84d374333ae1ffe", "db_host"=>"localhost"}]] </pre>
+
+        <p>We can see our entire data bag is returned. Let's find our which data bag item contains the host <strong>&quot;website2.example.com&quot;</strong>.</p>
+
+        <pre class="terminal">chef &gt; <span class="cmd">databags('wp-sites').search "host:website2.example.com"</span>
+ => [data_bag_item["wp-sites", "website2", {"id"=>"website2", "host"=>"website2.example.com", "db_name"=>"website2", "db_user"=>"website2", "db_password"=>"e50586910465ad767b36d11ec3fe323c", "db_host"=>"localhost"}]]</pre>
+
+        <p>You can see one data bag item is returned.</p>
+
+        <p>We'll come back to chef-shell later. Press Ctrl-D to quit.</p>
+
+        <h3>Using data bags in your recipes</h3>
+
+        <p>Load <em>cookbooks/phpapp/recipes/default.rb</em> in your text editor.</p>
+
+<!--           <p>At this point you'll need to make up two different DNS names for our two virtual hosts. You can set them up properly if you like but for now we'd recommend you just add them to your hosts file. Of course we don't yet know what IP address to point them at!</p>
+           <a href="http://www.rackspace.com/knowledge_center/article/how-do-i-modify-my-hosts-file" target="_blank">Rackspace have a handy guide</a> if you don't know how to do it for you workstation.</p>
+
+ -->
 
         </div>
         <div id="push"></div>
