@@ -1,5 +1,5 @@
-// $('.nav a').click(function (e) {
-//   e.preventDefault();
-//   $(this).tab('show');
-// })
+$('.option-switch a').click(function (e) {
+  e.preventDefault();
+  $(this).tab('show');
+})
 
