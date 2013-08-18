@@ -152,6 +152,15 @@ p {
 
 .twitter-share-button[style] { vertical-align: text-bottom !important; }
 
+.option-switch ul {
+  margin-bottom: 0;
+}
+
+.tab-content {
+  padding: 15px;
+  border: solid 1px #ddd;
+  border-top: none;
+}
 
 /* Custom page CSS
 -------------------------------------------------- */
