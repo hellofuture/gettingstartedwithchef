@@ -188,7 +188,7 @@ end</pre>
 Uploading phpapp         [0.1.0]
 Uploaded 1 cookbook.</pre>
 
-          <p>Let's converge a node. Use knife to bootstrap a node or create a cloud instance. A couple of example commands are listed below but refer to the previous chapter for more details.</p>
+          <p>Let's create a new node. Use knife to bootstrap a node or create a cloud instance. A couple of example commands are listed below but refer to the previous chapter for more details.</p>
 
           <div class="tabbable option-switch"> <!-- Only required for left/right tabs -->
             <ul class="nav nav-tabs">
@@ -198,7 +198,8 @@ Uploaded 1 cookbook.</pre>
             </ul> 
             <div class="tab-content">
               <div class="tab-pane active" id="cmd1-bootstrap">
-                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --sudo hostname</span></pre>     
+                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --sudo <span class="code2highlight">hostname</span></span></pre> 
+                <p class="muted">Replace hostname with the name or IP of the machine.</p>
               </div>
               <div class="tab-pane" id="cmd1-rackspace">
                 <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp]"</span></pre>
@@ -344,9 +345,13 @@ end</pre>
 
           <pre class="editor">opts = data_bag_item("wp-sites", site)</pre>
 
-          <p>We them pass the values in opts to our resources where required.</p>
+          <p>We then pass the values in opts to our resources and our <strong>wordpress_site</strong> definition.</p>
 
-          <p>Save the file and let's try this out.</p>
+          <p>Save the file and let's try this out. Upload our cookbook to Hosted Chef with knife.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
 
           <p>SSH to the box we created earlier on. Run chef-client as root.</p>
 
@@ -360,9 +365,9 @@ Chef Client finished, 10 resources updated</pre>
 
           <p><a href="http://www.rackspace.com/knowledge_center/article/how-do-i-modify-my-hosts-file" target="_blank">Rackspace have a handy guide</a> if you don't know how to do it for you workstation.</p>
 
-          <p>Visit <a href="http://website1.example.com" target="_blank">website1.example.com</a> and <a href="http://website1.example.com" target="_blank">website1.example.com</a>. Fill in the WordPress installation page for each one (giving them a different Site Title) then visit the two different sites. You'll see they are different sites. So that means we can now run multiple websites on our Chef configured server. Let's prove it.</p>
+          <p>Visit <a href="http://website1.example.com" target="_blank">website1.example.com</a> and <a href="http://website1.example.com" target="_blank">website1.example.com</a>. Fill in the WordPress installation page for each one (giving them a different Site Title) then visit the two different sites. You'll see they are different sites. So that means we can now run multiple websites on our Chef configured server.</p>
 
-          <p>Let's create website3. To do that all we need to do is create a new data bag item. Back on our workstation run the following command.</p>
+          <p>Now adding a new site to our web server is easy. Let's create website3. All we need to do is create a new data bag item. Back on our workstation run the following command.</p>
 
           <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website3</span></pre>
 
@@ -381,7 +386,6 @@ Chef Client finished, 10 resources updated</pre>
           <pre class="terminal"># <span class="cmd">chef-client</span>
 ..
 Chef Client finished, 14 resources updated</pre>
-
           
           <p>Create a hosts entry for website3.example.com on your workstation. Visit <a href="http://website3.example.com" target="_blank">website3.example.com</a>. You'll get another WordPress installation page. You can create as many WordPress sites as you like!</p>
 
