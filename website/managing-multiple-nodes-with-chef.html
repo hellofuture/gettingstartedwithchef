@@ -53,7 +53,7 @@
 
           <h2>3. Managing multiple nodes with Chef</h2>
 
-          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and repository setup from the last chapter.</div>
+          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and setup from the last chapter.</div>
         
           <p>This chapter extends our cookbook to work with multiple web sites and support multiple nodes. It introduces slightly more advanced Chef concepts like data bags and search.</p>
 
@@ -130,7 +130,7 @@ end</pre>
 
           <p>You might recogonise the above as slightly modified code from our recipe from the first chapter. You'll see we've replaced various node attributes with <strong>params[&quot;param&quot;]</strong>. Those parameters are defined and named in the <strong>define</strong> line.</p>
 
-          <p>We haven't included the database and database access resources in our definition. That's because setting up a database might not necessarily be the job of the Chef recipe creating the website configuration. For example, we might have multiple web front ends talking to one database.</p>
+          <p>We haven't included the database and database access resources in our definition. That's because setting up a database might not necessarily be the job of the Chef recipe creating the website configuration. More about that later in the chapter.</p>
 
           <p>Add the code above and save the file. We'll now modify our recipe to use the code.</p>
 
@@ -365,7 +365,7 @@ Chef Client finished, 10 resources updated</pre>
 
           <p><a href="http://www.rackspace.com/knowledge_center/article/how-do-i-modify-my-hosts-file" target="_blank">Rackspace have a handy guide</a> if you don't know how to do it for you workstation.</p>
 
-          <p>Visit <a href="http://website1.example.com" target="_blank">website1.example.com</a> and <a href="http://website1.example.com" target="_blank">website1.example.com</a>. Fill in the WordPress installation page for each one (giving them a different Site Title) then visit the two different sites. You'll see they are different sites. So that means we can now run multiple websites on our Chef configured server.</p>
+          <p>Visit <a href="http://website1.example.com" target="_blank">website1.example.com</a> and <a href="http://website2.example.com" target="_blank">website2.example.com</a>. Fill in the WordPress installation page for each one (giving them a different Site Title) then visit the two different sites. You'll see they are different sites. So that means we can now run multiple websites on our Chef configured server.</p>
 
           <p>Now adding a new site to our web server is easy. Let's create website3. All we need to do is create a new data bag item. Back on our workstation run the following command.</p>
 
@@ -388,6 +388,17 @@ Chef Client finished, 10 resources updated</pre>
 Chef Client finished, 14 resources updated</pre>
           
           <p>Create a hosts entry for website3.example.com on your workstation. Visit <a href="http://website3.example.com" target="_blank">website3.example.com</a>. You'll get another WordPress installation page. You can create as many WordPress sites as you like!</p>
+
+          <h3>What if we get too much traffic?</h3>
+
+          <p>A nice problem to have! As our imaginary WordPress website empire grows and we get more traffic, we will need to increase our capacity beyond our little web server. We have two options: vertical or horizontal scaling.</p>
+
+          <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine can be moved easily to a bigger machine, especially if you have automated server setup with Chef. However as your traffic increases so does your hardware or cloud hosting bill. If you have a quad core server with 16 GB of RAM and your traffic increases, you will now you need an eight core machine with 32GB. If you have a disaster recover process, you'll probably need another one on standby just in case.</p>
+
+          <p>Horizontal scaling however is adding more servers and sharing the load between them. It can also have the advantage of adding redundancy. For example if we have two web handling traffic and one breaks we can still handle. If we can separate various parts of our website or application into different services we can have even more redundancy.</p>
+
+          <p>Our <strong>phpapp</strong> recipe already supports vertical scaling as we can use it to build a new server with more memory but we need to make some changes to it before we can scale horizontally. Let's split up our MySQL server and web server setup into different recipes so we can run multiple web servers which talk to a separate database server.</p>
+
 
         </div>
         <div id="push"></div>

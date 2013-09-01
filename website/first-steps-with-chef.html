@@ -917,9 +917,9 @@ template node['phpapp']['path'] + '/wp-config.php' do
   variables(
     :database        => node['phpapp']['database'],
     :user            => node['phpapp']['db_username'],
-    :password        => node['phpapp']['db_username']
-    :wp_secrets      => salt_data)
-)
+    :password        => node['phpapp']['db_username'],
+    :wp_secrets      => salt_data
+  )
 end
 
 <span class="code2add">web_app 'phpapp' do
