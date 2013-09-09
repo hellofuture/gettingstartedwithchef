@@ -60,9 +60,9 @@
 
         <p>In the first chapter we'll introduce you to Chef and we'll be working over a SSH connection. There are better ways to work with Chef and we'll get to them in later chapters but things will be kept as simple as possible to start with.</p>
 
-        <p>The simplest way to use Chef is <a href="http://docs.opscode.com/chef_solo.html" target="_blank">chef-solo</a>. It allows you to install, configure and manage the packages required by your application without the complication of any client and server configuration. We'll start with the common scenario that you have to setup a website designer with a Wordpress environment.</p>
+        <p>The simplest way to use Chef is <a href="http://docs.opscode.com/chef_solo.html" target="_blank">chef-solo</a>. It allows you to install, configure and manage the packages required by your application without the complication of any client and server configuration. We'll start with the common scenario that you have to setup a website designer with a WordPress environment.</p>
 
-        <p>Every time you do this you have to setup a web server, remember lots of installation commands, edit configuration files, fetch a copy of Wordpress and do lots of setup. Generally you always forget one step and it is an unnecessary distraction from what you should be doing. Wouldn't it be nice if this was all entirely automated? With Chef we can define our infrastructure as code and automate tasks just like this.</p>
+        <p>Every time you do this you have to setup a web server, remember lots of installation commands, edit configuration files, fetch a copy of WordPress and do lots of setup. Generally you always forget one step and it is an unnecessary distraction from what you should be doing. Wouldn't it be nice if this was all entirely automated? With Chef we can define our infrastructure as code and automate tasks just like this.</p>
 
         <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of Ubuntu. Don't just run Chef on your Ubuntu or Mac desktop, we need somewhere we can play around and re-image later.</p> 
 
@@ -626,11 +626,11 @@ Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 2 resources updated</pre>
 
-    <p>Now we've setup our database we need to fetch a fresh copy of Wordpress.</p>
+    <p>Now we've setup our database we need to fetch a fresh copy of WordPress.</p>
 
-    <h3>Fetching Wordpress</h3>
+    <h3>Fetching WordPress</h3>
 
-    <p>We want to setup each new Wordpress build with the latest version so we'll fetch it from Wordpress.org. But how? 
+    <p>We want to setup each new WordPress build with the latest version so we'll fetch it from WordPress.org. But how? 
     Fortunately enough, Chef comes with the resource <a href="http://docs.opscode.com/resource_remote_file.html" target="_blank">remote_file</a> which will do just that for us.</p>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
@@ -664,11 +664,11 @@ end</span></pre>
 
     <p>Save the file.</p>
 
-    <p>We need to tell our recipe where to put the Wordpress code so we'll add a default attribute. Open attributes/default.rb.</p>
+    <p>We need to tell our recipe where to put the WordPress code so we'll add a default attribute. Open attributes/default.rb.</p>
 
     <pre class="editor"><span class="code2add">default["phpapp"]["path"] = "/var/www/phpapp"</span></pre>
 
-    <p>Add the line in green to the end of the list of attributes and save the file. Now we'll see if Wordpress is downloaded.</p>
+    <p>Add the line in green to the end of the list of attributes and save the file. Now we'll see if WordPress is downloaded.</p>
 
     <pre class="terminal">root@intro:~/chef-rep/cookbooks/phpapp# <span class="cmd">cd ../..</span>
 root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
@@ -714,15 +714,15 @@ Chef Client finished, 6 resources updated</pre>
   * directory[/var/www/phpapp] action create (up to date)
   * execute[untar-wordpress] action run (up to date)</pre>
 
-    <p>No actions were performed by the code we've added (there is nothing in green), so our recipe is idempotent! Now we need to configure Wordpress.</p>
+    <p>No actions were performed by the code we've added (there is nothing in green), so our recipe is idempotent! Now we need to configure WordPress.</p>
 
     <h3>Templates</h3>
 
-    <p>Wordpress keeps it's configuration in a file called wp-config.php. We need to create that file and put database names and user access details inside it. Chef provides a resource called <a href="http://docs.opscode.com/resource_template.html" target="_blank">template</a> that can do just that.</p>
+    <p>WordPress keeps it's configuration in a file called wp-config.php. We need to create that file and put database names and user access details inside it. Chef provides a resource called <a href="http://docs.opscode.com/resource_template.html" target="_blank">template</a> that can do just that.</p>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
-    <p>Wordpress requires some random salt strings for security. It would not be wise for us to specify a default in our cookbook so instead of specifying them in web.json, we can use a service provided by Wordpress to generate a file containing them.</p>
+    <p>WordPress requires some random salt strings for security. It would not be wise for us to specify a default in our cookbook so instead of specifying them in web.json, we can use a service provided by WordPress to generate a file containing them.</p>
 
     <p>Open recipes/default.rb and add the code in green to the end.</p>
 
@@ -738,7 +738,7 @@ end</span></pre>
 
     <p>Save the file.</p>
 
-    <p>Wordpress comes with an example configuration file which we'd usually alter to create our template but for brevity we'll just specify a cut down version below. Create templates/default/wp-config.php.erb.</p>
+    <p>WordPress comes with an example configuration file which we'd usually alter to create our template but for brevity we'll just specify a cut down version below. Create templates/default/wp-config.php.erb.</p>
 
     <pre class="editor"><span class="code2add">&lt;?php
 
@@ -804,7 +804,7 @@ Chef Client finished, 8 resources updated</pre>
 
     <h3>Creating an Apache VirtualHost</h3>
 
-    <p>We need to define a template for the Apache VirtualHost that will run Wordpress. We'll create that now.</p>
+    <p>We need to define a template for the Apache VirtualHost that will run WordPress. We'll create that now.</p>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
@@ -959,7 +959,7 @@ default["phpapp"]["path"] = "/var/www/phpapp"
 
     <p>Finally, let's run chef-solo.</p>
 
-    <h3>A working Wordpress installation!</h3>
+    <h3>A working WordPress installation!</h3>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">chef-solo -c solo.rb -j web.json</span>
 Starting Chef Client, version 11.4.0
@@ -998,11 +998,11 @@ Starting Chef Client, version 11.4.0
 <span class="muted">...</span>
 Chef Client finished, 57 resources updated</pre>
     
-    <p>Exciting, let's check to see if we can access our Wordpress site!</p>
+    <p>Exciting, let's check to see if we can access our WordPress site!</p>
 
     <p><img class="img-rounded" src="assets/img/hello-wordpress.png" /></p>
 
-    <p>So that's worked. We can now setup a Wordpress install with just a few commands! In the next chapter we'll show you how to provision new cloud servers with a single command and introduce better ways of working with Chef.</p>
+    <p>So that's worked. We can now setup a WordPress install with just a few commands! In the next chapter we'll show you how to provision new cloud servers with a single command and introduce better ways of working with Chef.</p>
 
     <ul class="pager">
       <li class="previous"><a href="index.html">&larr; Introduction</a></li>

@@ -154,7 +154,7 @@ Uploaded all cookbooks.</pre>
 
         <h3>Roles</h3>
 
-        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
+        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our WordPress setup.</p>
 
         <pre class="terminal">$ <span class="cmd">knife role create phpapp</span></pre>
         
@@ -349,7 +349,7 @@ bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
 <span class="code2remote">Run List</span>: role[phpapp]
 </pre>
 
-        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the Wordpress install page.</p>
+        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the WordPress install page.</p>
 
         <p>We can even use knife to clean up our servers. Get a list of servers with the following command.</p>
 
@@ -442,7 +442,7 @@ i-xxxxxxxx   server01  x.x.x.x    x.x.x.x     m1.small  ami-3d160149  sshkey  ww
 <span class="code2remote">Environment</span>: _default
 <span class="code2remote">Run List</span>: role[phpapp]</pre>
 
-        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the Wordpress install page.</p>
+        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the WordPress install page.</p>
 
         <p>You can also delete instances you no longer need with knife. Using the instance ID from the output of the server create command above, we can delete the instance we just made using the following command.</p>
 
