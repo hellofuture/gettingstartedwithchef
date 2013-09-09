@@ -206,7 +206,7 @@ Uploaded 1 cookbook.</pre>
               </div>
               <div class="tab-pane" id="cmd1-amazon">
                 <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
-              </do>
+              </div>
             </div>
           </div>
 
@@ -390,13 +390,12 @@ Chef Client finished, 14 resources updated</pre>
           <p>Create a hosts entry for website3.example.com on your workstation. Visit <a href="http://website3.example.com" target="_blank">website3.example.com</a>. You'll get another WordPress installation page. You can create as many WordPress sites as you like!</p>
 
           <p>In the next chapter we'll discuss extending our cookbook to handle running our application on multiple nodes.</p>
-
-        </div>
-
-        <ul class="pager">
-          <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
-        </ul>
-        
+  
+          <ul class="pager">
+            <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
+          </ul>
+  
+        </div>          
         <div id="push"></div>
     </div>
 
