@@ -1,4 +1,5 @@
-$('.nav a').click(function (e) {
+$('.option-switch a').click(function (e) {
   e.preventDefault();
   $(this).tab('show');
 })
+

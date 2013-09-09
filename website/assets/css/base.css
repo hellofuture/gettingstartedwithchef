@@ -13,7 +13,7 @@ body {
   height: auto !important;
   height: 100%;
   /* Negative indent footer by it's height */
-  margin: 0 auto -80px;
+  margin: 0 auto -60px;
 }
 
 /* Set the fixed height of the footer here */
@@ -22,6 +22,7 @@ body {
   height: 80px;
 }
 #footer {
+  border-top: 1px solid #e0e0e0;
   background-color: #f0f0f0;
 }
 
@@ -134,6 +135,7 @@ p {
   background-color: #f0f0f0;
   font-size: small;
   border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
 }
 
 #hellofutureinfo .container {
@@ -143,6 +145,22 @@ p {
   margin: 7px 0;
 }
 
+#gswc-chapter-switcher {
+  float: right;
+}
+
+
+.twitter-share-button[style] { vertical-align: text-bottom !important; }
+
+.option-switch ul {
+  margin-bottom: 0;
+}
+
+.tab-content {
+  padding: 15px;
+  border: solid 1px #ddd;
+  border-top: none;
+}
 
 /* Custom page CSS
 -------------------------------------------------- */

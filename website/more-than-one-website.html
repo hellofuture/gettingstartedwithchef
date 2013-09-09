@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>More than one website - Getting started with Chef</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn how to configure, manage and provision cloud servers with Chef by following practical examples with real world applications.">
+    <meta name="author" content="Andy Gale for Hello Future Ltd">
+
+    <!-- CSS -->
+    <link href="assets/cerulean/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/base.css?v=3" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+<!--     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="..`icon.png"> -->
+  </head>
+
+  <body>
+
+    <div id="wrap">
+      <div id="hellofutureinfo">
+        <div class="container"><p>The authors of this online book <a href="http://hellofutu.re">Hello Future</a> offer cloud automation and Chef training and consultancy.<br/>Say <a href="mailto:hello@hellofutu.re">hello@hellofutu.re</a> for more information or <a href="https://twitter.com/hellofutur3">follow us on Twitter</a>.</p></div>
+      </div>
+
+       <div class="container">
+          <div class="page-header">
+            <ul id="gswc-chapter-switcher" class="nav nav-pills">
+              <li class="active dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Chapters <b class="caret"></b></a>
+                <ul class="pull-right dropdown-menu">
+                  <li><a href="index.html">Home</a></li>
+                  <li><a href="first-steps-with-chef.html">First steps with Chef</a></li>
+                  <li><a href="introducing-chef-server.html">Introducing Chef Server</a></li>
+                  <li class="active"><a href="more-than-one-website.html">More than one website</a></li>
+                </ul>
+              </li>
+            </ul>
+            <h1>Getting started with Chef</h1>
+            <div>By Andy Gale</div>
+          </div>
+
+          <ul class="pager">
+            <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
+          </ul>
+
+          <h2>3. More than one website</h2>
+
+          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and setup from the last chapter.</div>
+        
+          <p>This chapter extends our cookbook to work with multiple web sites. It introduces slightly more advanced Chef concepts like data bags and search.</p>
+
+          <p> First we'll do a bit of house keeping and learn a new Chef concept. Our <strong>phpapp</strong> recipe was a bit verbose. It would be nice if we could group all the resources required to setup a WordPress site into one call and put that call elsewhere like a function or method. Well we can do exactly that with <a href="http://docs.opscode.com/essentials_cookbook_definitions.html" target="_blank">definitions</a>.</p>
+
+          <h3>Definitions</h3>
+
+          <p>Definitions are good for abstracting parts of your recipe into common code that can be used in other recipes or even cookbooks. Let's move our WordPress setup code into a definition.</p>
+
+          <p>Create <em>cookbooks/phpapp/definitions/wordpress_site.rb</em>.</p>
+
+          <pre class="editor">define :wordpress_site, :path =&gt; &quot;/var/www/phpapp&quot;, :database =&gt; &quot;phpapp&quot;, :db_username =&gt; &quot;phpapp&quot;, :db_password =&gt; &quot;phpapp&quot;, :template =&gt; &quot;site.conf.erb&quot; do
+
+  wordpress_latest = Chef::Config[:file_cache_path] + '/wordpress-latest.tar.gz'
+
+  remote_file wordpress_latest do
+    source 'http://wordpress.org/latest.tar.gz'
+    mode 0644
+  end
+
+  directory params[:path] do
+    owner 'root'
+    group 'root'
+    mode 0755
+    action :create
+    recursive true
+  end
+
+  execute 'untar-wordpress' do
+    cwd params[:path]
+    command 'tar --strip-components 1 -xzf ' + wordpress_latest
+    creates params[:path] + '/wp-settings.php'
+  end
+
+  wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
+
+  remote_file wp_secrets do
+    source 'https://api.wordpress.org/secret-key/1.1/salt/'
+    action :create_if_missing
+    mode 0644
+  end
+
+  salt_data = ''
+
+  ruby_block 'fetch-salt-data' do
+    block do
+      salt_data = File.read(wp_secrets)
+    end
+    action :create
+  end
+
+  template params[:path] + '/wp-config.php' do
+    source 'wp-config.php.erb'
+    mode 0755
+    owner 'root'
+    group 'root'
+    variables(
+      :database        =&gt; params[:database],
+      :user            =&gt; params[:db_username],
+      :password        =&gt; params[:db_password],
+      :wp_secrets      =&gt; salt_data)
+  end
+
+  # Due to a Chef quirk we can't pass our params to another definition
+  docroot = params[:path]
+  server_name = params[:name]
+
+  web_app server_name do
+    template &quot;site.conf.erb&quot;
+    docroot docroot
+    server_name server_name
+  end
+end</pre>
+
+          <p>You might recogonise the above as slightly modified code from our recipe from the first chapter. You'll see we've replaced various node attributes with <strong>params[&quot;param&quot;]</strong>. Those parameters are defined and named in the <strong>define</strong> line.</p>
+
+          <p>We haven't included the database and database access resources in our definition. That's because setting up a database might not necessarily be the job of the Chef recipe creating the website configuration. More about that later in the chapter.</p>
+
+          <p>Add the code above and save the file. We'll now modify our recipe to use the code.</p>
+
+          <p>Open <em>cookbooks/phpapp/recipes/default.rb</em>.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;apache2&quot;
+include_recipe &quot;mysql::client&quot;
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;php&quot;
+include_recipe &quot;php::module_mysql&quot;
+include_recipe &quot;apache2::mod_php5&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+apache_site &quot;default&quot; do
+  enable false
+end
+
+mysql_database node['phpapp']['database'] do
+  connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+  action :create
+end
+
+mysql_database_user node['phpapp']['db_username'] do
+  connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+  password node['phpapp']['db_password']
+  database_name node['phpapp']['database']
+  privileges [:select,:update,:insert,:create,:delete]
+  action :grant
+end</pre>
+
+          <p>Remove the code until your recipe looks like above or just replace it all with what's above.</p>
+
+          <p>Add the following code.</p>
+
+          <pre class="editor">wordpress_site node[&quot;phpapp&quot;][&quot;server_name&quot;] do
+  path &quot;/var/www/phpapp&quot;
+  database node[&quot;phpapp&quot;][&quot;database&quot;]
+  db_username node[&quot;phpapp&quot;][&quot;db_username&quot;]
+  db_password node[&quot;phpapp&quot;][&quot;db_password&quot;]
+  template &quot;site.conf.erb&quot;
+end</pre>
+        
+          <p>Now save the file. Lets upload our edited cookbook to the Chef Server.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Let's create a new node. Use knife to bootstrap a node or create a cloud instance. A couple of example commands are listed below but refer to the previous chapter for more details.</p>
+
+          <div class="tabbable option-switch"> <!-- Only required for left/right tabs -->
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#cmd1-bootstrap" data-toggle="tab">Bootstrap via SSH</a></li>
+              <li><a href="#cmd1-rackspace" data-toggle="tab">Rackspace</a></li>
+              <li><a href="#cmd1-amazon" data-toggle="tab">Amazon</a></li>
+            </ul> 
+            <div class="tab-content">
+              <div class="tab-pane active" id="cmd1-bootstrap">
+                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp]" --sudo <span class="code2highlight">hostname</span></span></pre> 
+                <p class="muted">Replace hostname with the name or IP of the machine.</p>
+              </div>
+              <div class="tab-pane" id="cmd1-rackspace">
+                <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp]"</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd1-amazon">
+                <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
+              </do>
+            </div>
+          </div>
+
+          <p>Once <strong>chef-client</strong> on the node has completed, confirm your cookbook still works by visiting the IP or hostname of the machine. You should see the WordPress installation page.</p>
+
+          <h3>More than one WordPress site</h3>
+
+          <p>Our <strong>phpapp</strong> cookbook is all very well but what if we want host more than one WordPress site on our web server? What if we want to add new sites in the future without changing our cookbook? We need somewhere to store this data somewhere and <a href="http://docs.opscode.com/essentials_data_bags.html" target="_blank">data bags</a> are ideal.</p>
+
+          <h3>Data bags</h3>
+
+          <p>A <em>data bag</em> is a collection of bits of JSON called <em>data bag items</em>, indexed by an ID, that Chef allows us to use and search in our recipes. Let's use knife to create our data bag.</p>
+
+          <p>Return to your chef-repo from the second chapter.</p>
+
+          <p>Type the following on your workstation to create a data bag called <strong>wp-sites</strong>.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites</span>
+Created data_bag[wp-sites]</pre>
+
+          <p>We'll call our site hosts <strong>website1.example.com</strong> and <strong>website2.example.com</strong>. Imaginative I know. Let's create our first website as the data bag item <strong>website1</strong>.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website1</span></pre>
+
+        
+          <p>You may receive the following error if you do not have an EDITOR environment variable set.</p>
+
+          <pre class="terminal"><span class="chef-error">ERROR:</span> RuntimeError: Please set EDITOR environment variable</pre>
+
+          <p>You can resolve this quickly with the <strong>--editor</strong> option. e.g. <strong>--editor vi</strong> or <strong>--editor nano</strong> etc.</p> 
+        
+          <p>Now we will add our per site configuration as JSON attributes. As well as a different hostname for each site, we want to be able to be able to configure a separate database name, user, password for each of the sites on our server so we'll include these details in our data bag.</p>
+
+          <pre class="editor">{
+  "id": "website1"<span class="code2add">,
+  "host": "website1.example.com",
+  "database": "website1",
+  "db_username": "website1",
+  "db_password": "212b09752d173876a84d374333ae1ffe"</span>
+}</pre>
+          
+          <p>Add the code in green. Save the file. We now have our first data bag item. Let's create another.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website2</span></pre>
+
+          <p>Our second website will be similar to the first!</p>
+
+          <pre class="editor">{
+  "id": "website2"<span class="code2add">,
+  "host": "website2.example.com",
+  "database": "website2",
+  "db_username": "website2",
+  "db_password": "e50586910465ad767b36d11ec3fe323c"</span>
+}</pre>
+
+         <p>Add the code in green. Save the file. We now have two data bags! Now time for something cool!</p>
+
+          <h3>Chef Shell</h3>
+
+          <p>As well as cookbooks, recipes and knife, we can also use <a href="http://docs.opscode.com/chef_shell.html" target="_blank">chef-shell</a> to interact with Chef. Let's use it to take a look at our new data bag.</p>
+
+          <pre class="terminal">$ <span class="cmd">chef-shell -c .chef/knife.rb</span>
+loading configuration: none (standalone session)
+Session type: standalone
+Loading...done.
+
+This is the chef-shell.
+ Chef Version: 11.x.x
+ http://www.opscode.com/chef
+ http://wiki.opscode.com/display/chef/Home
+
+run `help' for help, `exit' or ^D to quit.
+
+Ohai2u andy@computer!
+chef &gt;
+</pre>
+
+          <p>Those familiar with Python or the IRb (Interactive Ruby Shell) already know how you use <strong>chef-shell</strong>. We can just type cookbook code in and see what happens! Useful for experimenting or debugging.</p>
+
+          <p>Let's get our data bag from the Chef Server. From inside chef-shell.</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">databags('wp-sites').list</span>
+ => [data_bag_item["wp-sites", "website2", {"id"=>"website2", "host"=>"website2.example.com", "database"=>"website2", "db_username"=>"website2", "db_password"=>"e50586910465ad767b36d11ec3fe323c"}], data_bag_item["wp-sites", "website1", {"id"=>"website1", "host"=>"website1.example.com", "database"=>"website1", "db_username"=>"website1", "db_password"=>"212b09752d173876a84d374333ae1ffe"}]] </pre>
+
+          <p>We can see our entire data bag is returned. Let's find our which data bag item contains the host <strong>&quot;website2.example.com&quot;</strong>.</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">databags('wp-sites').search "host:website2.example.com"</span>
+ => [data_bag_item["wp-sites", "website2", {"id"=>"website2", "host"=>"website2.example.com", "database"=>"website2", "db_username"=>"website2", "db_password"=>"e50586910465ad767b36d11ec3fe323c"}]]</pre>
+
+          <p>You can see one data bag item is returned.</p>
+
+          <p>We'll come back to chef-shell later. Press Ctrl-D to quit.</p>
+
+          <h3>Using data bags in your recipes</h3>
+
+          <p>Load <em>cookbooks/phpapp/recipes/default.rb</em> in your text editor. Locate the <strong>wordpress_site</strong> definition we created earlier. Replace it and the <strong>mysql_database</strong> and <strong>mysql_database_user</strong> resource calls with the following code.</p>
+
+          <pre class="editor">sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    action :grant
+  end
+
+  wordpress_site opts[&quot;host&quot;] do
+    path &quot;/var/www/&quot; + opts[&quot;host&quot;]
+    database opts[&quot;database&quot;]
+    db_username opts[&quot;db_username&quot;]
+    db_password opts[&quot;db_password&quot;]
+    template &quot;site.conf.erb&quot;
+  end
+end</pre>
+
+          <p>We'll explain the key parts of that now.</p>
+        
+          <p>First we retrieve a list of items in our data bag.</p>
+
+          <pre class="editor">sites = data_bag(&quot;wp-sites&quot;)</pre>
+
+          <p>We then loop through that list of items (which is called iterating).</p>
+
+          <pre class="editor">sites.each do |site|</pre>
+
+          <p>We get the contents of the data bag we are looking at and store it in <strong>opts</strong>.</p>
+
+          <pre class="editor">opts = data_bag_item("wp-sites", site)</pre>
+
+          <p>We then pass the values in opts to our resources and our <strong>wordpress_site</strong> definition.</p>
+
+          <p>Save the file and let's try this out. Upload our cookbook to Hosted Chef with knife.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>SSH to the box we created earlier on. Run chef-client as root.</p>
+
+          <pre class="terminal"># <span class="cmd">chef-client</span>
+..
+Chef Client finished, 10 resources updated</pre>
+
+          <p>We now have two websites.</p>
+
+          <p>To test if that's worked, create two hosts file entries. One for website1.example.com and one for website2.example.com.</p>
+
+          <p><a href="http://www.rackspace.com/knowledge_center/article/how-do-i-modify-my-hosts-file" target="_blank">Rackspace have a handy guide</a> if you don't know how to do it for you workstation.</p>
+
+          <p>Visit <a href="http://website1.example.com" target="_blank">website1.example.com</a> and <a href="http://website2.example.com" target="_blank">website2.example.com</a>. Fill in the WordPress installation page for each one (giving them a different Site Title) then visit the two different sites. You'll see they are different sites. So that means we can now run multiple websites on our Chef configured server.</p>
+
+          <p>Now adding a new site to our web server is easy. Let's create website3. All we need to do is create a new data bag item. Back on our workstation run the following command.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife data bag create wp-sites website3</span></pre>
+
+          <p>Add the following code in green then save the file.</p>
+
+          <pre class="editor">{
+  "id": "website3"<span class="code2add">,
+  "host": "website3.example.com",
+  "database": "website3",
+  "db_username": "website3",
+  "db_password": "b96b1ae6deb7da0e042de904cf0ba70d"</span>
+}</pre>
+
+          <p>SSH back to the box running our web server. Rerun chef-client.</p>
+
+          <pre class="terminal"># <span class="cmd">chef-client</span>
+..
+Chef Client finished, 14 resources updated</pre>
+          
+          <p>Create a hosts entry for website3.example.com on your workstation. Visit <a href="http://website3.example.com" target="_blank">website3.example.com</a>. You'll get another WordPress installation page. You can create as many WordPress sites as you like!</p>
+
+
+
+        </div>
+
+        <ul class="pager">
+          <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
+        </ul>
+        
+        <div id="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 08378526<br />
+        Created with <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> and <a href="http://bootswatch.com/cerulean/" target="_blank">Bootswatch Cerulean.</a></p>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38853378-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+    <script type="text/javascript" src="assets/js/lib/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/gswc.js"></script>
+  </body>
+</html>
+
