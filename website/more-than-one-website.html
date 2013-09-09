@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Managing multiple nodes with Chef - Getting started with Chef</title>
+    <title>More than one website - Getting started with Chef</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Learn how to configure, manage and provision cloud servers with Chef by following practical examples with real world applications.">
     <meta name="author" content="Andy Gale for Hello Future Ltd">
@@ -39,7 +39,7 @@
                   <li><a href="index.html">Home</a></li>
                   <li><a href="first-steps-with-chef.html">First steps with Chef</a></li>
                   <li><a href="introducing-chef-server.html">Introducing Chef Server</a></li>
-                  <li class="active"><a href="managing-multiple-nodes-with-chef.html">Managing multiple nodes with Chef</a></li>
+                  <li class="active"><a href="more-than-one-website.html">More than one website</a></li>
                 </ul>
               </li>
             </ul>
@@ -51,11 +51,11 @@
             <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
           </ul>
 
-          <h2>3. Managing multiple nodes with Chef</h2>
+          <h2>3. More than one website</h2>
 
           <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and setup from the last chapter.</div>
         
-          <p>This chapter extends our cookbook to work with multiple web sites and support multiple nodes. It introduces slightly more advanced Chef concepts like data bags and search.</p>
+          <p>This chapter extends our cookbook to work with multiple web sites. It introduces slightly more advanced Chef concepts like data bags and search.</p>
 
           <p> First we'll do a bit of house keeping and learn a new Chef concept. Our <strong>phpapp</strong> recipe was a bit verbose. It would be nice if we could group all the resources required to setup a WordPress site into one call and put that call elsewhere like a function or method. Well we can do exactly that with <a href="http://docs.opscode.com/essentials_cookbook_definitions.html" target="_blank">definitions</a>.</p>
 
@@ -388,17 +388,6 @@ Chef Client finished, 10 resources updated</pre>
 Chef Client finished, 14 resources updated</pre>
           
           <p>Create a hosts entry for website3.example.com on your workstation. Visit <a href="http://website3.example.com" target="_blank">website3.example.com</a>. You'll get another WordPress installation page. You can create as many WordPress sites as you like!</p>
-
-          <h3>What if we get too much traffic?</h3>
-
-          <p>A nice problem to have! As our imaginary WordPress website empire grows and we get more traffic, we will need to increase our capacity beyond our little web server. We have two options: vertical or horizontal scaling.</p>
-
-          <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine can be moved easily to a bigger machine, especially if you have automated server setup with Chef. However as your traffic increases so does your hardware or cloud hosting bill. If you have a quad core server with 16 GB of RAM and your traffic increases, you will now you need an eight core machine with 32GB. If you have a disaster recover process, you'll probably need another one on standby just in case.</p>
-
-          <p>Horizontal scaling however is adding more servers and sharing the load between them. It can also have the advantage of adding redundancy. For example if we have two web handling traffic and one breaks we can still handle. If we can separate various parts of our website or application into different services we can have even more redundancy.</p>
-
-          <p>Our <strong>phpapp</strong> recipe already supports vertical scaling as we can use it to build a new server with more memory but we need to make some changes to it before we can scale horizontally. Let's split up our MySQL server and web server setup into different recipes so we can run multiple web servers which talk to a separate database server.</p>
-
 
         </div>
         <div id="push"></div>
