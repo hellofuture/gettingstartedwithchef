@@ -197,6 +197,7 @@ Uploaded 1 cookbook.</pre>
               <li class="active"><a href="#cmd1-bootstrap" data-toggle="tab">Bootstrap via SSH</a></li>
               <li><a href="#cmd1-rackspace" data-toggle="tab">Rackspace</a></li>
               <li><a href="#cmd1-amazon" data-toggle="tab">Amazon</a></li>
+              <li><a href="#cmd1-brightbox" data-toggle="tab">Brightbox</a></li>
             </ul> 
             <div class="tab-content">
               <div class="tab-pane active" id="cmd1-bootstrap">
@@ -208,7 +209,10 @@ Uploaded 1 cookbook.</pre>
               </div>
               <div class="tab-pane" id="cmd1-amazon">
                 <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
-              </do>
+              </div>
+              <div class="tab-pane" id="cmd1-brightbox">
+                <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp]" --distro chef-full</span></pre>
+              </div>
             </div>
           </div>
 
@@ -383,7 +387,7 @@ Chef Client finished, 10 resources updated</pre>
   "db_password": "b96b1ae6deb7da0e042de904cf0ba70d"</span>
 }</pre>
 
-          <p>SSH back to the box running our web server. Rerun chef-client.</p>
+          <p>SSH back to the box running our web server. Re-run chef-client.</p>
 
           <pre class="terminal"># <span class="cmd">chef-client</span>
 ..
@@ -393,14 +397,13 @@ Chef Client finished, 14 resources updated</pre>
 
           <p>In the next chapter we'll discuss extending our cookbook to handle running our application on multiple nodes.</p>
 
-        </div>
+          <ul class="pager">
+            <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
+            <li class="next"><a href="managing-multiple-nodes.html">Managing multiple nodes &rarr;</a></li>
+          </ul>
 
-        <ul class="pager">
-          <li class="previous"><a href="introducing-chef-server.html">&larr; Introducing Chef Server</a></li>
-          <li class="next"><a href="managing-multiple-nodes.html">Managing multiple nodes &rarr;</a></li>
-        </ul>
-        
         <div id="push"></div>
+      </div>
     </div>
 
     <div id="footer">

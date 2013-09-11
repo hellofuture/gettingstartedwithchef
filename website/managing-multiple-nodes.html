@@ -56,7 +56,7 @@
 
           <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and set up from the last two  chapters.</div>
 
-          <p>In this chapter we'll take our example WordPress hosting set up to an enterprise level by using Chef to configure multiple redundant nodes.</p>
+          <p>In this chapter we'll take our example WordPress hosting set up to the enterprise level by using Chef to configure multiple nodes.</p>
 
           <h3>Too much traffic?</h3>
 
@@ -64,7 +64,7 @@
 
           <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine can be moved easily to a bigger machine, especially if you already have automated server setup with Chef. However as your traffic increases so does your hardware or cloud hosting bill. If you have a quad core server with 16 GB of RAM and your traffic increases, you will now need an eight core machine with 32GB.</p>
 
-          <p>At enterprise level you should probably have a server on standby for redundancy in case of hardware or software failure anyway so you may as well use it to serve some traffic. This is called horizontal scaling.</p>
+          <p>At enterprise level you should probably have a server on standby for redundancy in case of hardware or software failure anyway so you may as well use it to serve some traffic.</p>
 
           <p>Horizontal scaling is adding more servers and sharing the load between them. It can also have the advantage of adding redundancy. If we have two web servers handling traffic and one breaks our websites will remain online. If we can separate various parts of our website or application into different services we can have even more redundancy.</p>
 
@@ -72,9 +72,9 @@
 
           <h3>Two recipes</h3>
 
-          <p>We'll create a recipe called <strong>mysql_server</strong> inside the <strong>phpapp</strong> cookbook.</p>
+          <p>Let's create a recipe called <strong>mysql_server</strong> and <strong>web</strong> inside the <strong>phpapp</strong> cookbook.</p>
 
-          <p>On your workstation, load <em>cookbooks/phpapp/recipes/mysql_server.rb</em> in your text editor.</p>
+          <p>On your workstation, create <em>cookbooks/phpapp/recipes/mysql_server.rb</em> in your text editor.</p>
 
           <pre class="editor">#
 # Cookbook Name:: phpapp
@@ -107,20 +107,89 @@ sites.each do |site|
   end
 end</pre>
   
-        <p>Add the code above. You'll notice we've included just the parts that we need to setup a MySQL server.</p>
+          <p>Add the code above. You'll notice we've included just the parts that we need to setup a MySQL server.</p>
 
-        <p>Now save the file.</p>
+          <p>Now save the file.</p>
 
-        <p>We'll now make changes to the default recipe so it just installs the web part of the site.</p>
+          <p>We'll now make changes to the default recipe so it just installs the web part of the site.</p>
 
-        <p>Now load <em>cookbooks/phpapp/recipes/default.rb</em> in your text editor.</p>
+          <p>Again on your workstation, create <em>cookbooks/phpapp/recipes/web.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: web
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;apache2&quot;
+include_recipe &quot;mysql::client&quot;
+include_recipe &quot;php&quot;
+include_recipe &quot;php::module_mysql&quot;
+include_recipe &quot;apache2::mod_php5&quot;
+
+apache_site &quot;default&quot; do
+  enable false
+end
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  wordpress_site opts[&quot;host&quot;] do
+    path &quot;/var/www/&quot; + opts[&quot;host&quot;]
+    database opts[&quot;database&quot;]
+    db_username opts[&quot;db_username&quot;]
+    db_password opts[&quot;db_password&quot;]
+    template &quot;site.conf.erb&quot;
+  end
+end
+</pre>
+
+          <p>Replace the contents of the file with the above. Save the file.</p>
+
+          <p>Finally we'll edit the default recipe and simply make it call both new recipes. This will allow us to continue to use the recipe on a single server.</p>
+
+          <p>On your workstation, open <em>cookbooks/phpapp/recipes/default.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;phpapp::mysql_server&quot;
+include_recipe &quot;phpapp::web&quot;
+</pre>
+
+          <p>Replace what's there with the code above. Save the file.</p>
+
+          <p>Our server instance from the last chapter should still be running. Let's just check our new split cookbooks still work. On your node type the following.</p>
+
+          <pre class="terminal">$ <span class="cmd">chef-client</span>
+..
+Chef Client finished, 7 resources updated
+</pre>
+
+          <p>Excellent our recipe still works on a single instance. Now let's try to create an environment with more than one instance.</p>
+
+          <h3>Multiple nodes</h3>
+
+          <p>We have defined two different roles for our set up. A web server and a database server. Firstly let's create a new role for each.</p>
 
 
-        <ul class="pager">
-          <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
-        </ul>
+          <ul class="pager">
+            <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
+          </ul>
         
-        <div id="push"></div>
+          <div id="push"></div>
+      </div>
     </div>
 
     <div id="footer">

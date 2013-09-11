@@ -155,7 +155,7 @@ Uploaded all cookbooks.</pre>
 
         <h3>Roles</h3>
 
-        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our Wordpress setup.</p>
+        <p>We used a single JSON file to configure our node with <strong>chef-solo</strong> but what if we have multiple nodes? We should probably find a better solution to this. A Chef <strong>role</strong> allows us to group configuration for types of nodes together. We'll expand on this in a later chapter but for now we'll create a role for our WordPress setup.</p>
 
         <pre class="terminal">$ <span class="cmd">knife role create phpapp</span></pre>
         
@@ -300,8 +300,8 @@ knife[:rackspace_api_key] = "APIKEY"
   
         <p>Save knife.rb. We can test to see if that's worked using the following command.</p>
 
-        <pre class="terminal">$ <span class="cmd">knife rackspace flavor list</span><strong>
-ID  Name                          VCPUs   RAM     Disk</strong>
+        <pre class="terminal">$ <span class="cmd">knife rackspace flavor list</span>
+ID  Name                     VCPUs  RAM    Disk</span>
 2   512MB Standard Instance  1      512    20 GB  
 3   1GB Standard Instance    1      1024   40 GB  
 4   2GB Standard Instance    2      2048   80 GB  
@@ -312,8 +312,8 @@ ID  Name                          VCPUs   RAM     Disk</strong>
 
         <p>We can get a list of available images (operating systems) with the following command.</p>
 
-        <pre class="terminal">$ <span class="cmd">knife rackspace image list</span><strong>
-ID                                          Name</strong>
+        <pre class="terminal">$ <span class="cmd">knife rackspace image list</span>
+ID                                    Name
 32b7d027-8a40-458b-9e73-bd719d660df6  Arch 2013.6
 e0ed4adb-3a00-433e-a0ac-a51f1bc1ea3d  CentOS 6.4
 81877a6e-9e87-4b1f-93f3-b176e25f3c4a  Debian 7 (Wheezy)
@@ -350,13 +350,13 @@ bb8c27f9-f3cf-4606-9a88-8a2123e02290  Gentoo 13.2
 <span class="code2remote">Run List</span>: role[phpapp]
 </pre>
 
-        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the Wordpress install page.</p>
+        <p>Visit the <em>Public IP Address</em> in your browser and you will once again see the WordPress install page.</p>
 
         <p>We can even use knife to clean up our servers. Get a list of servers with the following command.</p>
 
-        <pre class="terminal">$ <span class="cmd">knife rackspace server list</span><strong>
-Instance ID  Name  Public IP       Private IP    Flavor  Image                         State</strong>
-xxxxxxxx   rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
+        <pre class="terminal">$ <span class="cmd">knife rackspace server list</span>
+Instance ID Name Public IP     Private IP  Flavor Image                                 State
+xxxxxxxx    rs-x 192.168.9.199 10.9.1.199  2      23cebbc9-3219-4a27-9210-d63e1af7181b  <span class="action">active</span></pre>
 
         <p>We can delete the server we just created with the following command. We also need to remove references to the server from our Hosted Chef account. We do this with the --purge option. Replace <em>INSTANCE_ID</em> with the value under Instance ID from the server list command above.</p>
 
@@ -404,13 +404,13 @@ knife[:aws_ssh_key_id] = "sshkey"</span></pre>
         <p>We can now access a list of cloud instances with the following command. Cloud servers will be listed whether they have been created with knife or not.</p>
 
         <pre class="terminal">$ <span class="cmd">knife ec2 server list</span>
-<strong>Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State</strong></pre>
+Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State</pre>
 
         <p>I have no servers listed. This is because my servers reside in the region <em>eu-west-1</em>. We can specify a region by using the option <em>--region</em>.</p>
 
-        <pre class="terminal">$ <span class="cmd">knife ec2 server list --region eu-west1</span><strong>
-Instance ID  Name      Public IP  Private IP  Flavor    Image         SSH Key Security Groups  State</strong>
-i-xxxxxxxx   server01  x.x.x.x    x.x.x.x     m1.small  ami-3d160149  sshkey  www, default     <span class="action">running</span></pre>
+        <pre class="terminal">$ <span class="cmd">knife ec2 server list --region eu-west1</span>
+Instance ID Name   Public IP Private IP Flavor   Image        SSH Key Security Groups  State
+i-xxxxxxxx  serr01 x.x.x.x   x.x.x.x    m1.small ami-3d160149 sshkey  www,     default <span class="action">running</span></pre>
 
 
         <p>I can use knife to provision and bootstrap a cloud instance with the following command.</p>
@@ -443,7 +443,7 @@ i-xxxxxxxx   server01  x.x.x.x    x.x.x.x     m1.small  ami-3d160149  sshkey  ww
 <span class="code2remote">Environment</span>: _default
 <span class="code2remote">Run List</span>: role[phpapp]</pre>
 
-        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the Wordpress install page.</p>
+        <p>Visit the <em>Public DNS Name</em> in your browser and you'll see the WordPress install page.</p>
 
         <p>You can also delete instances you no longer need with knife. Using the instance ID from the output of the server create command above, we can delete the instance we just made using the following command.</p>
 
@@ -472,7 +472,87 @@ Do you really want to delete this server? (Y/N) y
           <dd>specifies a region other than the default.</dd>
         </dl>
 
-        <p>Hopefully you used either an Amazon or Rackspace cloud account and automatically bootstrapped a cloud instance using knife. In the next chapter we'll introduce some tools that will make manging and developing our cookbooks a lot easier and modify our Chef environment to work with multiple websites.</p> 
+        <h3>Brightbox</h3>
+
+        <p>Brightbox are a UK based cloud provider. You can <a href="https://manage.brightbox.com/signup" target="_blank">sign up with them here</a>.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-brightbox</span>
+...
+Successfully installed knife-brightbox-0.3.0</pre>
+
+        <p>Now we need to set some details in .chef/knife.rb (which is inside your Chef Repository). Open it up in your favourite text editor.</p>
+
+        <pre class="editor"><span class="code2add">knife[:brightbox_client_id] = "xxx-xxxxx"
+knife[:brightbox_secret] = "xxxxxxxxxxxxxxx"</span></pre>
+
+        <p>Add the code in green but enter your API client id and secret which you can obtain from your Brightbox account settings page.</p>
+
+        <p>Save the file.</p>
+
+        <p>We can test to see if that's worked using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox flavor list</span>
+ID           Name             Handle           Architecture     RAM        Disk       Cores
+typ-4nssg    High IO Nano     nano.high-io     0-bit            512 MB     20 GB      2
+typ-c8awf    Standard Nano    nano             0-bit            512 MB     20 GB      1
+typ-b1gmb    Standard Mini    mini             0-bit            1024 MB    40 GB      2
+typ-iqisj    High IO Mini     mini.high-io     0-bit            1024 MB    40 GB      4
+typ-urtky    High IO Small    small.high-io    0-bit            2048 MB    80 GB      4
+typ-8fych    Standard Small   small            0-bit            2048 MB    80 GB      2
+typ-qdiwq    High IO Medium   medium.high-io   0-bit            4096 MB    160 GB     8
+typ-1j0zf    Standard Medium  medium           0-bit            4096 MB    160 GB     4
+typ-mlbt7    High IO Large    large.high-io    0-bit            8192 MB    320 GB     8
+typ-1e0xr    Standard Large   large            0-bit            8192 MB    320 GB     4
+typ-wdicw    High IO XL       xl.high-io       0-bit            16384 MB   640 GB     8
+typ-a4aqc    Standard XL      xl               0-bit            16384 MB   640 GB     4
+typ-lr76m    High IO XXL      xxl.high-io      0-bit            32768 MB   1280 GB    8
+typ-vs01b    Standard XXL     xxl              0-bit            32768 MB   1280 GB    4</pre>
+
+        <p>We can get a list of images (operating systems) with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox image list</span>
+ID          Name                               Status    
+img-t3xyp   Blank Disk Image                   public    
+img-r726y   FreeBSD 9.0 minimal                public    
+img-hnigl   Windows 2008 Server R2             public    
+img-g8ia6   ubuntu-raring-13.04-amd64-server   public    
+img-u3ttt   ubuntu-raring-13.04-i386-server    public    
+img-6isnq   ubuntu-raring-daily-amd64-server   public    
+img-rttkx   ubuntu-raring-daily-i386-server    public    
+img-nhjvo   ubuntu-saucy-daily-amd64-server    public    
+img-q1ts8   ubuntu-saucy-daily-i386-server     public</pre>
+    
+        <p>So let's provision and bootstrap a cloud instance with Brightbox.</p>
+
+        <div class="alert alert-block"><strong>Heads up!</strong> Before you can bootstrap with Brightbox you need to enter your SSH public key in the dashboard.</div>
+
+        <p>We'll use the flavor "typ-c8awf" and the Ubuntu 13.04 image "img-g8ia6".</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp]" --distro chef-full</span></pre>
+
+        <p>After a while we'll see the following result.</p>
+
+        <pre class="terminal"><span class="code2remote">xxx.xxx.xx.xx</span> Chef Client finished, 73 resources updated
+<span class="code2remote">xxx.xxx.xx.xx</span> 
+
+<span class="code2remote">Instance ID</span>: srv-5ple0
+<span class="code2remote">Name</span>: 
+<span class="code2remote">Flavor</span>: typ-c8awf
+<span class="code2remote">Image</span>: ubuntu-raring-13.04-amd64-server
+<span class="code2remote">Public IP Address</span>: 109.107.35.66
+<span class="code2remote">Private IP Address</span>: 10.242.34.174
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]</pre>
+
+        <p>Visit the Public IP Address in your browser and you'll see the WordPress install page.</p>
+
+        <h3>Other cloud providers</h3>
+
+        <p>If you're a cloud provider that would like to have instructions for your platform included with Getting started with Chef, please email <a href="mailto:support@gettingstartedwithchef.com" target="_blank">support@gettingstartedwithchef.com</a> and we'll make that happen.</p>
+
+        <h3>Next chapter</h3>
+
+        <p>Hopefully you used either a Brightbox, Amazon or Rackspace cloud account and automatically bootstrapped a cloud instance using knife. In the next chapter we'll introduce some tools that will make manging and developing our cookbooks a lot easier and modify our Chef environment to work with multiple websites.</p> 
 
         <ul class="pager">
           <li class="previous"><a href="first-steps-with-chef.html">&larr; First steps with Chef</a></li>
