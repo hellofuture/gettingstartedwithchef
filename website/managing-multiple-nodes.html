@@ -383,6 +383,46 @@ default['phpapp']['server_name'] = 'phpapp'
 
           <p>So we can now specify the host. But how do we find it out what the database host is? We can search for a node with the <strong>phpapp-mysql</strong> role.</p>
 
+          <p>Let's go back to the <strong>chef-shell</strong> and learn how to search for our role.</p>
+
+          <pre class="terminal">$ <span class="cmd">chef-shell -c .chef/knife.rb</span>
+loading configuration: none (standalone session)
+Session type: standalone
+Loading...done.
+
+This is the chef-shell.
+ Chef Version: 11.x.x
+ http://www.opscode.com/chef
+ http://wiki.opscode.com/display/chef/Home
+
+run `help' for help, `exit' or ^D to quit.
+
+Ohai2u andy@computer!
+chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')</span>
+ =&gt; [node[servername-11001]]</pre>
+
+          <p>Type the command in bold, and you'll receive a response similar to the one above. It returns a list of nodes. The list is called an array. To view the first item of the array we need to use "[0]".</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')[0]</span>
+ =&gt; node[servername-11001]</pre>
+
+          <p>We need the IP address of our MySQL server node. We can view all the attributes available we can use the <strong>y</strong> command that will print the data out in YAML format. The attribute you need might be different on platforms.</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">y nodes.search('role:phpapp-mysql')[0]</span>
+...
+</pre>
+
+          <p>That will return all the attributes. You'll need to hunt through and find the IP address of the node. You should use the private IP where there is one.</p>
+
+          <p>A few examples of where that IP might be:</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')[0].cloud.private_ips[0]</span>
+ =&gt; 10.x.x.x</pre>
+
+          <pre class="terminal">chef &gt; <span class="cmd">y nodes.search('role:phpapp-mysql')[0].ipaddress</span>
+ =&gt; 10.x.x.x</pre>
+
+          <p>Make a note of where the private IP address can be found. Press Ctrl-D to quit chef-shell. Now let's update our recipe to do the search.</p>
 
           <ul class="pager">
             <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
