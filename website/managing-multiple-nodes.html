@@ -369,18 +369,6 @@ end</pre>
 
           <p>Add the <strong>two bits of code</strong> in green. Save the file.</p>
 
-          <p>Now we'll configure <strong>localhost</strong> as a default attribute for the database host.</p>
-
-          <p>Open <em>cookbooks/phpapp/attributes/default.rb</em> in your text editor.</p>
-
-          <pre class="editor">default["phpapp"]["database"] = "phpapp"
-default["phpapp"]["db_username"] = "phpapp"
-default['phpapp']['path'] = '/var/www/phpapp'
-default['phpapp']['server_name'] = 'phpapp'
-<span class="code2add">default["phpapp"]["db_host"] = "localhost"</span></pre>
-
-          <p>Add the code in green and save the file.</p>
-
           <p>So we can now specify the host. But how do we find it out what the database host is? We can search for a node with the <strong>phpapp-mysql</strong> role.</p>
 
           <p>Let's go back to the <strong>chef-shell</strong> and learn how to search for our role.</p>
@@ -401,12 +389,12 @@ Ohai2u andy@computer!
 chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')</span>
  =&gt; [node[servername-11001]]</pre>
 
-          <p>Type the command in bold, and you'll receive a response similar to the one above. It returns a list of nodes. The list is called an array. To view the first item of the array we need to use "[0]".</p>
+          <p>Type the command in bold, and you'll receive a response similar to the one above. It returns a list of nodes. The list is called an array. To view the first item of the array we need to use <strong>[0]</strong>.</p>
 
           <pre class="terminal">chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')[0]</span>
  =&gt; node[servername-11001]</pre>
 
-          <p>We need the IP address of our MySQL server node. We can view all the attributes available we can use the <strong>y</strong> command that will print the data out in YAML format. The attribute you need might be different on platforms.</p>
+          <p>We want to find the IP address of our MySQL server node. We can view all the attributes available with <strong>y</strong> command which will print the data out in YAML format. The attribute you need might be different on platforms.</p>
 
           <pre class="terminal">chef &gt; <span class="cmd">y nodes.search('role:phpapp-mysql')[0]</span>
 ...
@@ -423,6 +411,268 @@ chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')</span>
  =&gt; 10.x.x.x</pre>
 
           <p>Make a note of where the private IP address can be found. Press Ctrl-D to quit chef-shell. Now let's update our recipe to do the search.</p>
+
+          <p>Open <em>cookbooks/phpapp/recipes/web.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: web
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;apache2&quot;
+include_recipe &quot;mysql::client&quot;
+include_recipe &quot;php&quot;
+include_recipe &quot;php::module_mysql&quot;
+include_recipe &quot;apache2::mod_php5&quot;
+
+apache_site &quot;default&quot; do
+  enable false
+end
+
+<span class="code2add">db_hosts = search(:node, 'role:phpapp-mysql')
+
+if db_hosts.empty? 
+  db_host = 'localhost'
+else
+  begin
+    db_host = db_hosts[0].cloud.private_ips[0]
+  rescue NoMethodError =&gt; e
+    db_host = db_hosts[0].ipaddress
+  end
+end</span>
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  wordpress_site opts[&quot;host&quot;] do
+    path &quot;/var/www/&quot; + opts[&quot;host&quot;]
+    database opts[&quot;database&quot;]
+    <span class="code2add">db_host db_host</span>
+    db_username opts[&quot;db_username&quot;]
+    db_password opts[&quot;db_password&quot;]
+    template &quot;site.conf.erb&quot;
+  end
+end</pre>
+          <p>Add the code in green. You may need to alter it if you found the private IP in a different place but the code we've provided should work for most. Our changes default to "localhost" so the recipe still works when running on a single server.</p>
+
+          <p>Now we upload the latest version of our cookbook!</p>  
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Let's create a web server.</p>
+
+          <div class="tabbable option-switch">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#cmd2-bootstrap" data-toggle="tab">Bootstrap via SSH</a></li>
+              <li><a href="#cmd2-rackspace" data-toggle="tab">Rackspace</a></li>
+              <li><a href="#cmd2-amazon" data-toggle="tab">Amazon</a></li>
+              <li><a href="#cmd2-brightbox" data-toggle="tab">Brightbox</a></li>
+            </ul> 
+            <div class="tab-content">
+              <div class="tab-pane active" id="cmd2-bootstrap">
+                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp-web]" --sudo <span class="code2highlight">hostname</span></span></pre> 
+                <p class="muted">Replace hostname with the name or IP of the machine.</p>
+              </div>
+              <div class="tab-pane" id="cmd2-rackspace">
+                <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp-web]"</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd2-amazon">
+                <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp-web]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd2-brightbox">
+                <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp-web]" --distro chef-full --ssh-user ubuntu</span></pre>
+              </div>
+            </div>
+          </div>
+
+          <p>Once your node is bootstrapped, update your hosts file entries for the *.example.com hosts we created in the last chapter and open <a href="http://website1.example.com" target="_blank">website1.example.com</a> in your web browser.<p>
+
+          <p><img src="assets/img/error1.png"/></p>
+
+          <p>Oh dear! Why has that happened? The problem is in our mysql_server recipe.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: mysql_server
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    action :grant
+  end
+end</pre>
+
+          <p>Our issue is that our call to the <strong>mysql_database_user</strong> resource does not specify at host for the user. By default the MySQL user that the resource creates is only allowed to connect from <strong>localhost</strong>. This presents an interesting issue. We could search for nodes with the <strong>phpapp-web</strong> role and create a user that can connect from each node's IP address but that means any new web server we create will have to wait for <strong>chef-client</strong> to run again on the MySQL server before it can connect. This isn't a great solution because if we are creating additional web servers it's probably because we want to handle more traffic! Waiting isn't an option.</p>
+
+          <p>For now, we'll create a MySQL user that can connect from the private IP range 10.x.x.x. Of course, in a production environment you should ensure that you lock this down properly. First of all, let's have an attribute that allows us to specify a hostname for our MySQL users.</p>
+
+
+          <p>Open <em>cookbooks/phpapp/attributes/default.rb</em> in your text editor.</p>
+
+          <pre class="editor">default[&quot;phpapp&quot;][&quot;database&quot;] = &quot;phpapp&quot;
+default[&quot;phpapp&quot;][&quot;db_username&quot;] = &quot;phpapp&quot;
+default['phpapp']['path'] = '/var/www/phpapp'
+default['phpapp']['server_name'] = 'phpapp'
+<span class="code2add">default[&quot;phpapp&quot;][&quot;db_user_host&quot;] = &quot;localhost&quot;</span></pre>
+
+          <p>Add the code in green. Save the file.</p>
+
+          <p>Open <em>cookbooks/phpapp/recipes/mysql_server.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: mysql_server
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    <span class="code2add">host node['phpapp']['db_user_host']</span>
+    action :grant
+  end
+end</pre>
+
+          <p>Add the code in green. Save the file.</p>
+
+          <p>We'll now upload our cookbook changes.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Now we'll edit our <strong>phpapp-mysql</strong> role.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role edit phpapp-mysql</span></pre>
+
+          <pre class="editor">{
+  "name": "phpapp-mysql",
+  "description": "Role for database server",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    <span class="code2add">phpapp": {
+      "db_user_host": "10.%"
+    }</span>
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[apt]",
+    "recipe[phpapp::mysql_server]"
+  ],
+  "env_run_lists": {
+  }
+}</pre>
+
+          <p>Save your changes to update the role.</p>
+
+          <p>Let's download the role from the Chef server so we have it locally in a Chef repository.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role show phpapp-mysql -d -Fjson > roles/phpapp-mysql.json</span></pre>
+
+          <p>We're good to go. Let's connect to the node with the role <strong>phpapp-mysql</strong> and run <strong>chef-client</strong>.</p>
+
+          <pre class="terminal"># <span class="cmd">chef-client</span>
+..
+Chef Client finished, 4 resources updated
+</pre>
+
+          <p>If you visit  <a href="http://website1.example.com" target="_blank">website1.example.com</a> it might now work and you'll get the WordPress installation screen again. However you might find you are still unable to connect. That's what happened to me. I'll show you now how I debugged the issue.</p> 
+
+          <p>First things first, let's see if we can connect from the command line on the web server node. SSH to that node.</p>
+
+          <p>Let's remind ourselves to the details that WordPress is using to connect.</p>
+
+          <pre class="terminal">$ <span class="cmd">cat /var/www/website1.example.com/wp-config.php</span>
+&lt;?php
+
+define('DB_NAME', 'website1');
+define('DB_USER', 'website1');
+define('DB_PASSWORD', '212b09752d173876a84d374333ae1ffe');
+define('DB_HOST', '10.226.16.22');
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+</pre>
+
+          <p>We'll use those details now to attempt to connect.</p>
+
+          <pre class="terminal">$ <span class="cmd"> mysql -u website1 -h 10.226.16.22 -p212b09752d173876a84d374333ae1ffe website1</span>
+ERROR 1129 (HY000): Host 'srv-9mxex.gb1.brightbox.com' is blocked because of many connection errors; unblock with 'mysqladmin flush-hosts'</pre>
+
+          <p>This means the MySQL server has stopped our web server node connecting because we've been using incorrect access details. Disconnect from the web server node.</p>
+
+          <p>Back on your workstation run the following command to find out the root password for the MySQL server.</p> 
+
+          <pre class="terminal">$ <span class="cmd">knife search role:phpapp-mysql --attribute mysql.server_root_password</span>
+1 items found
+
+<span class="code2remote">gswc-mysql</span>:
+  <span class="code2remote">mysql.server_root_password</span>: IARHKfG0I_fiujJ5uBfd</pre>
+
+          <p>Neat, huh?</p>
+
+          <p>Now SSH to the MySQL server node. On that node run the following command.</p>
+
+          <pre class="terminal"># <span class="cmd">mysqladmin flush-hosts -uroot -p</span></pre>
+
+          <p>Paste in the password and you should now be able to view the WordPress installation page.</p>
+
+          <p><img src="assets/img/hello-wordpress.png"></p>
+
+          <p>Success! We now have the basis of system that allows us to add more web nodes to handle traffic increases. These more complicated configurations often require a bit more thought however.</p>
+
+          <p>For example, by default WordPress saves uploads to the local disk. These uploads would then not be accessable on the other node. There are WordPress plugins that instead store these files to Amazon S3 or alternatives. Issues with multiple node configurations can often benefit from features of individual cloud providers like this.</p>
+
+          <p>That's the end of this chapter. In the next chapter we'll look at ways we can speed up our development of cookbooks and improve our workflow.</p>
+
+          <p>Don't forget to delete those two nodes we created.</p>
 
           <ul class="pager">
             <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
