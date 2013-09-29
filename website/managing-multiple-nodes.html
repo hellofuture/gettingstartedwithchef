@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Managing multiple nodes - Getting started with Chef</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn how to configure, manage and provision cloud servers with Chef by following practical examples with real world applications.">
+    <meta name="author" content="Andy Gale for Hello Future Ltd">
+
+    <!-- CSS -->
+    <link href="assets/cerulean/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/base.css?v=3" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+<!--     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="..`icon.png"> -->
+  </head>
+
+  <body>
+
+    <div id="wrap">
+      <div id="hellofutureinfo">
+        <div class="container"><p>The authors of this online book <a href="http://hellofutu.re">Hello Future</a> offer cloud automation and Chef training and consultancy.<br/>Say <a href="mailto:hello@hellofutu.re">hello@hellofutu.re</a> for more information or <a href="https://twitter.com/hellofutur3">follow us on Twitter</a>.</p></div>
+      </div>
+
+       <div class="container">
+          <div class="page-header">
+            <ul id="gswc-chapter-switcher" class="nav nav-pills">
+              <li class="active dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Chapters <b class="caret"></b></a>
+                <ul class="pull-right dropdown-menu">
+                  <li><a href="index.html">Home</a></li>
+                  <li><a href="first-steps-with-chef.html">First steps with Chef</a></li>
+                  <li><a href="introducing-chef-server.html">Introducing Chef Server</a></li>
+                  <li><a href="more-than-one-website.html">More than one website</a></li>
+                  <li class="active"><a href="managing-multiple-nodes.html">Managing multiple nodes</a></li>
+                </ul>
+              </li>
+            </ul>
+            <h1>Getting started with Chef</h1>
+            <div>By Andy Gale</div>
+          </div>
+
+          <ul class="pager">
+            <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
+          </ul>
+
+          <h2>4. Managing multiple nodes</h2>
+
+          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and set up described in the last two chapters.</div>
+
+          <p>In this chapter we'll take our example WordPress hosting set up to the enterprise level by using Chef to configure multiple nodes.</p>
+
+          <h3>Too much traffic?</h3>
+
+          <p>Having too much traffic for a single web server to handle is a nice problem to have! As our imaginary WordPress website empire grows and we get more traffic, we will need to increase our capacity beyond our little web server. We have two options: vertical or horizontal scaling.</p>
+
+          <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine - which is usually most code - can be moved easily to a bigger machine, especially if you already have automated server setup with Chef.</p>
+
+          <p>At enterprise level you should probably have a server on standby for redundancy in case of hardware or software failure anyway so you may as well use it to handle traffic.</p>
+
+          <p>Horizontal scaling is adding more servers and sharing the load between them. It can also have the advantage of adding redundancy. If we have two web servers handling traffic and one breaks our websites will remain online. If we can separate various parts of our website or application into different services we can have even more redundancy.</p>
+
+          <p>Our <strong>phpapp</strong> default recipe already supports vertical scaling - we can use it to build a new server - but we need to make some changes to it before we can scale horizontally. Let's split up our recipe in two. We'll have a recipe that sets up the MySQL server, database and acesss details and another to set up our web server and site code.</p>
+
+          <h3>Two recipes</h3>
+
+          <p>Let's create a recipe called <strong>mysql_server</strong> and <strong>web</strong> inside the <strong>phpapp</strong> cookbook.</p>
+
+          <p>On your workstation, create <em>cookbooks/phpapp/recipes/mysql_server.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: mysql_server
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    action :grant
+  end
+end</pre>
+  
+          <p>Add the code above. We've included just the parts that are needed to setup the MySQL server.</p>
+
+          <p>Now save the file.</p>
+
+          <p>Again on your workstation, create <em>cookbooks/phpapp/recipes/web.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: web
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;apache2&quot;
+include_recipe &quot;mysql::client&quot;
+include_recipe &quot;php&quot;
+include_recipe &quot;php::module_mysql&quot;
+include_recipe &quot;apache2::mod_php5&quot;
+
+apache_site &quot;default&quot; do
+  enable false
+end
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  wordpress_site opts[&quot;host&quot;] do
+    path &quot;/var/www/&quot; + opts[&quot;host&quot;]
+    database opts[&quot;database&quot;]
+    db_username opts[&quot;db_username&quot;]
+    db_password opts[&quot;db_password&quot;]
+    template &quot;site.conf.erb&quot;
+  end
+end
+</pre>
+
+          <p>Replace the contents of the file with the above. Save the file.</p>
+
+          <p>Finally we'll edit the default recipe and simply make it call both new recipes. This will allow us to continue to use the recipe on a single server.</p>
+
+          <p>On your workstation, open <em>cookbooks/phpapp/recipes/default.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: default
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;phpapp::mysql_server&quot;
+include_recipe &quot;phpapp::web&quot;
+</pre>
+
+          <p>Replace what's there with the code above. Save the file.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Our server instance from the last chapter should still be running, if so let's just check our new split cookbooks still work. On your node type the following.</p>
+
+          <pre class="terminal">$ <span class="cmd">chef-client</span>
+..
+Chef Client finished, 7 resources updated
+</pre>
+
+          <p>Our recipe still works on a single instance. Now let's try to create an environment with more than one instance. We don't need this instance anymore so feel free to remove it.</p>
+
+          <h3>Multiple nodes</h3>
+
+          <p>We now need to create two separate roles. One for web instances and one for database instances. Firstly let's create the role for web servers.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role create phpapp-web</span></pre>
+
+          <pre class="editor">{
+  &quot;name&quot;: &quot;phpapp-web&quot;,
+  &quot;description&quot;: &quot;<span class="code2add">Role for web nodes</span>&quot;,
+  &quot;json_class&quot;: &quot;Chef::Role&quot;,
+  &quot;default_attributes&quot;: {
+  },
+  &quot;override_attributes&quot;: {
+  },
+  &quot;chef_type&quot;: &quot;role&quot;,
+  &quot;run_list&quot;: [
+    <span class="code2add">&quot;recipe[apt]&quot;, &quot;recipe[phpapp::web]&quot;</span>
+  ],
+  &quot;env_run_lists&quot;: {
+  }
+}</pre>
+
+          <p>Add the code in green and save the file.</p>
+
+          <pre class="terminal">Created role[phpapp-web]</pre>
+
+          <p>Let's download the role from the Chef server so we have it locally in a Chef repository.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role show phpapp-web -d -Fjson > roles/phpapp-web.json</span></pre>
+
+          <p>Okay, let's create a role for our database server.</pre> 
+
+          <pre class="terminal">$ <span class="cmd">knife role create phpapp-mysql</span></pre>
+
+          <pre class="editor">{
+  &quot;name&quot;: &quot;phpapp-mysql&quot;,
+  &quot;description&quot;: &quot;<span class="code2add">Role for database server&quot;</span>,
+  &quot;json_class&quot;: &quot;Chef::Role&quot;,
+  &quot;default_attributes&quot;: {
+  },
+  &quot;override_attributes&quot;: {
+  },
+  &quot;chef_type&quot;: &quot;role&quot;,
+  &quot;run_list&quot;: [
+    <span class="code2add">&quot;recipe[apt]&quot;, &quot;recipe[phpapp::mysql_server]&quot;</span>
+  ],
+  &quot;env_run_lists&quot;: {
+  }
+}</pre>
+          <p>Add the code in green and save the file.</p>
+
+          <pre class="terminal">Created role[phpapp-mysql]</pre>
+
+          <p>Again, let's download the role from the Chef server so we have it locally in a Chef repository.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role show phpapp-mysql -d -Fjson > roles/phpapp-mysql.json</span></pre>
+
+          <p>So, let's create a MySQL server node. We'll bootstrap the node using knife. A couple of example commands are listed below but refer to the <a href="introducing-chef-server.html">Introducing Chef Server</a> chapter for more details.</p>
+
+          <div class="tabbable option-switch">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#cmd1-bootstrap" data-toggle="tab">Bootstrap via SSH</a></li>
+              <li><a href="#cmd1-rackspace" data-toggle="tab">Rackspace</a></li>
+              <li><a href="#cmd1-amazon" data-toggle="tab">Amazon</a></li>
+              <li><a href="#cmd1-brightbox" data-toggle="tab">Brightbox</a></li>
+            </ul> 
+            <div class="tab-content">
+              <div class="tab-pane active" id="cmd1-bootstrap">
+                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp-mysql]" --sudo <span class="code2highlight">hostname</span></span></pre> 
+                <p class="muted">Replace hostname with the name or IP of the machine.</p>
+              </div>
+              <div class="tab-pane" id="cmd1-rackspace">
+                <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp-mysql]"</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd1-amazon">
+                <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp-mysql]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd1-brightbox">
+                <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp-mysql]" --distro chef-full --ssh-user ubuntu</span></pre>
+              </div>
+            </div>
+          </div>
+
+          <p>Once your Chef bootstrap is complete you'll you'll get the following message.</p>
+
+          <pre class="terminal">..
+<span class="code2remote">xxx.xxx.xxx.xxx</span> Chef Client finished, 28 resources updated</pre>
+        
+          <h3>MySQL host</h3>
+
+          <p>So that's our MySQL server set up. Now we need to create a instance to serve web traffic. First we need to change our cookbook so it supports using a MySQL server on a host other than <strong>localhost</strong>.</p>
+
+          <p>First, we'll edit our <strong>wp-config.php.erb</strong> template.</p>
+
+          <p>Open <em>cookbooks/phpapp/templates/default/wp-config.php.erb</em> in your text editor.</p>
+
+          <pre class="editor">&lt;?php
+
+define('DB_NAME', '&lt;%= @database %&gt;');
+define('DB_USER', '&lt;%= @user %&gt;');
+define('DB_PASSWORD', '&lt;%= @password %&gt;');
+define('DB_HOST', '<span class="code2add">&lt;%= @host %&gt;</span>');
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+
+&lt;%= @wp_secrets %&gt;
+
+$table_prefix  = 'wp_';
+
+define('WPLANG', '');
+define('WP_DEBUG', false);
+
+if ( !defined('ABSPATH') )
+    define('ABSPATH', dirname(__FILE__) . '/');
+
+require_once(ABSPATH . 'wp-settings.php');</pre>
+
+          <p>Replace <strong>localhost</strong> with the code in green. Save the file.</p>
+
+          <p>Now open <em>cookbooks/phpapp/definitions/wordpress_site.rb</em> in your text editor.</p>
+
+          <pre class="editor">define :wordpress_site, :path =&gt; &quot;/var/www/phpapp&quot;, :database =&gt; &quot;phpapp&quot;, :db_username =&gt; &quot;phpapp&quot;, :db_password =&gt; &quot;phpapp&quot;, <span class="code2add">:db_host =&gt; "localhost", </span>:template =&gt; &quot;site.conf.erb&quot; do
+
+  wordpress_latest = Chef::Config[:file_cache_path] + '/wordpress-latest.tar.gz'
+
+  remote_file wordpress_latest do
+    source 'http://wordpress.org/latest.tar.gz'
+    mode 0644
+  end
+
+  directory params[:path] do
+    owner 'root'
+    group 'root'
+    mode 0755
+    action :create
+    recursive true
+  end
+
+  execute 'untar-wordpress' do
+    cwd params[:path]
+    command 'tar --strip-components 1 -xzf ' + wordpress_latest
+    creates params[:path] + '/wp-settings.php'
+  end
+
+  wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
+
+  remote_file wp_secrets do
+    source 'https://api.wordpress.org/secret-key/1.1/salt/'
+    action :create_if_missing
+    mode 0644
+  end
+
+  salt_data = ''
+
+  ruby_block 'fetch-salt-data' do
+    block do
+      salt_data = File.read(wp_secrets)
+    end
+    action :create
+  end
+
+  template params[:path] + '/wp-config.php' do
+    source 'wp-config.php.erb'
+    mode 0755
+    owner 'root'
+    group 'root'
+    variables(
+      :database        =&gt; params[:database],
+      :user            =&gt; params[:db_username],
+      :password        =&gt; params[:db_password],
+      <span class="code2add">:host               =&gt; params[:db_host],</span>
+      :wp_secrets      =&gt; salt_data)
+  end
+
+  docroot = params[:path]
+  server_name = params[:name]
+
+  web_app server_name do
+    template &quot;site.conf.erb&quot;
+    docroot docroot
+    server_name server_name
+  end
+end</pre>
+
+          <p>Add the <strong>two bits of code</strong> in green. Save the file.</p>
+
+          <p>So we can now specify the host. But how do we find it out what the database host is? We can search for a node with the <strong>phpapp-mysql</strong> role.</p>
+
+          <p>Let's go back to the <strong>chef-shell</strong> and learn how to search for our role.</p>
+
+          <pre class="terminal">$ <span class="cmd">chef-shell -c .chef/knife.rb</span>
+loading configuration: none (standalone session)
+Session type: standalone
+Loading...done.
+
+This is the chef-shell.
+ Chef Version: 11.x.x
+ http://www.opscode.com/chef
+ http://wiki.opscode.com/display/chef/Home
+
+run `help' for help, `exit' or ^D to quit.
+
+Ohai2u andy@computer!
+chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')</span>
+ =&gt; [node[servername-11001]]</pre>
+
+          <p>Type the command in bold, and you'll receive a response similar to the one above. It returns a list of nodes. The list is called an array. To view the first item of the array we need to use <strong>[0]</strong>.</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')[0]</span>
+ =&gt; node[servername-11001]</pre>
+
+          <p>We want to find the IP address of our MySQL server node. We can view all the attributes available with <strong>y</strong> command which will print the data out in YAML format. The attribute you need might be different on platforms.</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">y nodes.search('role:phpapp-mysql')[0]</span>
+...
+</pre>
+
+          <p>That will return all the attributes. You'll need to hunt through and find the IP address of the node. You should use the private IP where there is one.</p>
+
+          <p>A few examples of where that IP might be:</p>
+
+          <pre class="terminal">chef &gt; <span class="cmd">nodes.search('role:phpapp-mysql')[0].cloud.private_ips[0]</span>
+ =&gt; 10.x.x.x</pre>
+
+          <pre class="terminal">chef &gt; <span class="cmd">y nodes.search('role:phpapp-mysql')[0].ipaddress</span>
+ =&gt; 10.x.x.x</pre>
+
+          <p>Make a note of where the private IP address can be found. Press Ctrl-D to quit chef-shell. Now let's update our recipe to do the search.</p>
+
+          <p>Open <em>cookbooks/phpapp/recipes/web.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: web
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;apache2&quot;
+include_recipe &quot;mysql::client&quot;
+include_recipe &quot;php&quot;
+include_recipe &quot;php::module_mysql&quot;
+include_recipe &quot;apache2::mod_php5&quot;
+
+apache_site &quot;default&quot; do
+  enable false
+end
+
+<span class="code2add">db_hosts = search(:node, 'role:phpapp-mysql')
+
+if db_hosts.empty? 
+  db_host = 'localhost'
+else
+  begin
+    db_host = db_hosts[0].cloud.private_ips[0]
+  rescue NoMethodError =&gt; e
+    db_host = db_hosts[0].ipaddress
+  end
+end</span>
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  wordpress_site opts[&quot;host&quot;] do
+    path &quot;/var/www/&quot; + opts[&quot;host&quot;]
+    database opts[&quot;database&quot;]
+    <span class="code2add">db_host db_host</span>
+    db_username opts[&quot;db_username&quot;]
+    db_password opts[&quot;db_password&quot;]
+    template &quot;site.conf.erb&quot;
+  end
+end</pre>
+          <p>Add the code in green. You may need to alter it if you found the private IP in a different place but the code we've provided should work for most. Our changes default to "localhost" so the recipe still works when running on a single server.</p>
+
+          <p>Now we upload the latest version of our cookbook!</p>  
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Let's create a web server.</p>
+
+          <div class="tabbable option-switch">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#cmd2-bootstrap" data-toggle="tab">Bootstrap via SSH</a></li>
+              <li><a href="#cmd2-rackspace" data-toggle="tab">Rackspace</a></li>
+              <li><a href="#cmd2-amazon" data-toggle="tab">Amazon</a></li>
+              <li><a href="#cmd2-brightbox" data-toggle="tab">Brightbox</a></li>
+            </ul> 
+            <div class="tab-content">
+              <div class="tab-pane active" id="cmd2-bootstrap">
+                <pre class="terminal">$ <span class="cmd">knife bootstrap --run-list "role[phpapp-web]" --sudo <span class="code2highlight">hostname</span></span></pre> 
+                <p class="muted">Replace hostname with the name or IP of the machine.</p>
+              </div>
+              <div class="tab-pane" id="cmd2-rackspace">
+                <pre class="terminal">$ <span class="cmd">knife rackspace server create --flavor 2 --image 23cebbc9-3219-4a27-9210-d63e1af7181b --run-list "role[phpapp-web]"</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd2-amazon">
+                <pre class="terminal">$ <span class="cmd">knife ec2 server create --run-list "role[phpapp-web]" -I ami-3d160149 --region eu-west-1 -G www,default -x ubuntu --node-name server01 --identity-file ~/.ssh/sshkey.pem</span></pre>
+              </div>
+              <div class="tab-pane" id="cmd2-brightbox">
+                <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp-web]" --distro chef-full --ssh-user ubuntu</span></pre>
+              </div>
+            </div>
+          </div>
+
+          <p>Once your node is bootstrapped, update your hosts file entries for the *.example.com hosts we created in the last chapter and open <a href="http://website1.example.com" target="_blank">website1.example.com</a> in your web browser.<p>
+
+          <p><img src="assets/img/error1.png"/></p>
+
+          <p>Oh dear! Why has that happened? The problem is in our mysql_server recipe.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: mysql_server
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    action :grant
+  end
+end</pre>
+
+          <p>Our issue is that our call to the <strong>mysql_database_user</strong> resource does not specify at host for the user. By default the MySQL user that the resource creates is only allowed to connect from <strong>localhost</strong>. This presents an interesting issue. We could search for nodes with the <strong>phpapp-web</strong> role and create a user that can connect from each node's IP address but that means any new web server we create will have to wait for <strong>chef-client</strong> to run again on the MySQL server before it can connect. This isn't a great solution because if we are creating additional web servers it's probably because we want to handle more traffic! Waiting isn't an option.</p>
+
+          <p>For now, we'll create a MySQL user that can connect from the private IP range 10.x.x.x. Many cloud providers give you a virtual LAN for your account which keeps the traffic between your nodes private so this isn't an issue but in a production environment you should be sure that you lock this down properly.</p>
+
+          <p>First of all, let's have an attribute that allows us to specify a default host for our MySQL users.</p>
+
+
+          <p>Open <em>cookbooks/phpapp/attributes/default.rb</em> in your text editor.</p>
+
+          <pre class="editor">default[&quot;phpapp&quot;][&quot;database&quot;] = &quot;phpapp&quot;
+default[&quot;phpapp&quot;][&quot;db_username&quot;] = &quot;phpapp&quot;
+default['phpapp']['path'] = '/var/www/phpapp'
+default['phpapp']['server_name'] = 'phpapp'
+<span class="code2add">default[&quot;phpapp&quot;][&quot;db_user_host&quot;] = &quot;localhost&quot;</span></pre>
+
+          <p>Add the code in green. Save the file.</p>
+
+          <p>Open <em>cookbooks/phpapp/recipes/mysql_server.rb</em> in your text editor.</p>
+
+          <pre class="editor">#
+# Cookbook Name:: phpapp
+# Recipe:: mysql_server
+#
+# Copyright 2013, YOUR_COMPANY_NAME
+#
+# All rights reserved - Do Not Redistribute
+#
+
+include_recipe &quot;mysql::server&quot;
+include_recipe &quot;mysql::ruby&quot;
+
+sites = data_bag(&quot;wp-sites&quot;)
+ 
+sites.each do |site|
+  opts = data_bag_item(&quot;wp-sites&quot;, site)
+
+  mysql_database opts[&quot;database&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    action :create
+  end
+
+  mysql_database_user opts[&quot;db_username&quot;] do
+    connection ({:host =&gt; 'localhost', :username =&gt; 'root', :password =&gt; node['mysql']['server_root_password']})
+    password opts[&quot;db_password&quot;]
+    database_name opts[&quot;database&quot;]
+    privileges [:select,:update,:insert,:create,:delete]
+    <span class="code2add">host node['phpapp']['db_user_host']</span>
+    action :grant
+  end
+end</pre>
+
+          <p>Add the code in green. Save the file.</p>
+
+          <p>We'll now upload our cookbook changes.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife cookbook upload phpapp</span>
+Uploading phpapp         [0.1.0]
+Uploaded 1 cookbook.</pre>
+
+          <p>Now we'll edit our <strong>phpapp-mysql</strong> role and override the default attribute with our value that is specific to our set up.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role edit phpapp-mysql</span></pre>
+
+          <pre class="editor">{
+  "name": "phpapp-mysql",
+  "description": "Role for database server",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    <span class="code2add">phpapp": {
+      "db_user_host": "10.%"
+    }</span>
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[apt]",
+    "recipe[phpapp::mysql_server]"
+  ],
+  "env_run_lists": {
+  }
+}</pre>
+
+          <p>Save your changes to update the role.</p>
+
+          <p>Let's download the role from the Chef server so we have it locally in a Chef repository.</p>
+
+          <pre class="terminal">$ <span class="cmd">knife role show phpapp-mysql -d -Fjson > roles/phpapp-mysql.json</span></pre>
+
+          <p>We're good to go. Let's connect to the node with the role <strong>phpapp-mysql</strong> and run <strong>chef-client</strong>.</p>
+
+          <pre class="terminal"># <span class="cmd">chef-client</span>
+..
+Chef Client finished, 4 resources updated
+</pre>
+
+          <p>If you visit  <a href="http://website1.example.com" target="_blank">website1.example.com</a> it might now work and you'll get the WordPress installation screen again. However you might find you are still unable to connect. That's what happened to me. I'll show you now how I debugged the issue.</p> 
+
+          <p>First things first, let's see if we can connect from the command line on the web server node. SSH to that node.</p>
+
+          <p>Let's remind ourselves to the details that WordPress is using to connect.</p>
+
+          <pre class="terminal">$ <span class="cmd">cat /var/www/website1.example.com/wp-config.php</span>
+&lt;?php
+
+define('DB_NAME', 'website1');
+define('DB_USER', 'website1');
+define('DB_PASSWORD', '212b09752d173876a84d374333ae1ffe');
+define('DB_HOST', '10.226.16.22');
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+</pre>
+
+          <p>We'll use those details now to attempt to connect.</p>
+
+          <pre class="terminal">$ <span class="cmd"> mysql -u website1 -h 10.226.16.22 -p212b09752d173876a84d374333ae1ffe website1</span>
+ERROR 1129 (HY000): Host 'srv-9mxex.gb1.brightbox.com' is blocked because of many connection errors; unblock with 'mysqladmin flush-hosts'</pre>
+
+          <p>This means the MySQL server has stopped our web server node connecting because we've been using incorrect access details. Disconnect from the web server node.</p>
+
+          <p>Back on your workstation run the following command to find out the root password for the MySQL server.</p> 
+
+          <pre class="terminal">$ <span class="cmd">knife search role:phpapp-mysql --attribute mysql.server_root_password</span>
+1 items found
+
+<span class="code2remote">gswc-mysql</span>:
+  <span class="code2remote">mysql.server_root_password</span>: IARHKfG0I_fiujJ5uBfd</pre>
+
+          <p>Neat, huh?</p>
+
+          <p>Now SSH to the MySQL server node. On that node run the following command.</p>
+
+          <pre class="terminal"># <span class="cmd">mysqladmin flush-hosts -uroot -p</span></pre>
+
+          <p>Paste in the password and you should now be able to view the WordPress installation page.</p>
+
+          <p><img src="assets/img/hello-wordpress.png"></p>
+
+          <p>Success! We now have the basis of system that allows us to add more web nodes to handle traffic increases. These more complicated configurations often require a bit more thought however.</p>
+
+          <p>For example, by default WordPress saves uploads to the local disk. These uploads would then not be accessable on the other node. There are WordPress plugins that instead store these files to Amazon S3 or alternatives. Issues with multiple node configurations can often benefit from features of individual cloud providers like this.</p>
+
+          <p>That's the end of this chapter. In the next chapter we'll look at ways we can speed up our development of cookbooks and improve our workflow.</p>
+
+          <p>Don't forget to delete those two nodes we created.</p>
+
+          <ul class="pager">
+            <li class="previous"><a href="more-than-one-website.html">&larr; More than one website</a></li>
+          </ul>
+        
+          <div id="push"></div>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; <a href="http://hellofutu.re">Hello Future Ltd</a>. Registered in England and Wales. Company No: 08378526<br />
+        Created with <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> and <a href="http://bootswatch.com/cerulean/" target="_blank">Bootswatch Cerulean.</a></p>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38853378-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+    <script type="text/javascript" src="assets/js/lib/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="assets/js/gswc.js"></script>
+  </body>
+</html>
+
