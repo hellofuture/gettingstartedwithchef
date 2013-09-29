@@ -54,7 +54,7 @@
 
           <h2>4. Managing multiple nodes</h2>
 
-          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and set up describe in the last two chapters.</div>
+          <div class="alert alert-success"><strong>Heads up!</strong> To follow along with the examples in this chapter you'll need the Hosted Chef account and set up described in the last two chapters.</div>
 
           <p>In this chapter we'll take our example WordPress hosting set up to the enterprise level by using Chef to configure multiple nodes.</p>
 
@@ -62,9 +62,9 @@
 
           <p>Having too much traffic for a single web server to handle is a nice problem to have! As our imaginary WordPress website empire grows and we get more traffic, we will need to increase our capacity beyond our little web server. We have two options: vertical or horizontal scaling.</p>
 
-          <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine can be moved easily to a bigger machine, especially if you already have automated server setup with Chef. However as your traffic increases so does your hardware or cloud hosting bill. If you have a quad core server with 16 GB of RAM and your traffic increases, you will now need an eight core machine with 32GB.</p>
+          <p>Vertical scaling is adding more power to the machine that runs our website or application. It is often the easiest option as code only written to run on a single machine - which is usually most code - can be moved easily to a bigger machine, especially if you already have automated server setup with Chef.</p>
 
-          <p>At enterprise level you should probably have a server on standby for redundancy in case of hardware or software failure anyway so you may as well use it to serve some traffic.</p>
+          <p>At enterprise level you should probably have a server on standby for redundancy in case of hardware or software failure anyway so you may as well use it to handle traffic.</p>
 
           <p>Horizontal scaling is adding more servers and sharing the load between them. It can also have the advantage of adding redundancy. If we have two web servers handling traffic and one breaks our websites will remain online. If we can separate various parts of our website or application into different services we can have even more redundancy.</p>
 
@@ -110,8 +110,6 @@ end</pre>
           <p>Add the code above. We've included just the parts that are needed to setup the MySQL server.</p>
 
           <p>Now save the file.</p>
-
-          <p>We'll now make changes to the default recipe so it just installs the web part of the site.</p>
 
           <p>Again on your workstation, create <em>cookbooks/phpapp/recipes/web.rb</em> in your text editor.</p>
 
@@ -181,7 +179,7 @@ Uploaded 1 cookbook.</pre>
 Chef Client finished, 7 resources updated
 </pre>
 
-          <p>Excellent our recipe still works on a single instance. Now let's try to create an environment with more than one instance. We don't need this instance anymore so feel free to remove it.</p>
+          <p>Our recipe still works on a single instance. Now let's try to create an environment with more than one instance. We don't need this instance anymore so feel free to remove it.</p>
 
           <h3>Multiple nodes</h3>
 
@@ -532,7 +530,9 @@ end</pre>
 
           <p>Our issue is that our call to the <strong>mysql_database_user</strong> resource does not specify at host for the user. By default the MySQL user that the resource creates is only allowed to connect from <strong>localhost</strong>. This presents an interesting issue. We could search for nodes with the <strong>phpapp-web</strong> role and create a user that can connect from each node's IP address but that means any new web server we create will have to wait for <strong>chef-client</strong> to run again on the MySQL server before it can connect. This isn't a great solution because if we are creating additional web servers it's probably because we want to handle more traffic! Waiting isn't an option.</p>
 
-          <p>For now, we'll create a MySQL user that can connect from the private IP range 10.x.x.x. Of course, in a production environment you should ensure that you lock this down properly. First of all, let's have an attribute that allows us to specify a hostname for our MySQL users.</p>
+          <p>For now, we'll create a MySQL user that can connect from the private IP range 10.x.x.x. Many cloud providers give you a virtual LAN for your account which keeps the traffic between your nodes private so this isn't an issue but in a production environment you should be sure that you lock this down properly.</p>
+
+          <p>First of all, let's have an attribute that allows us to specify a default host for our MySQL users.</p>
 
 
           <p>Open <em>cookbooks/phpapp/attributes/default.rb</em> in your text editor.</p>
@@ -587,7 +587,7 @@ end</pre>
 Uploading phpapp         [0.1.0]
 Uploaded 1 cookbook.</pre>
 
-          <p>Now we'll edit our <strong>phpapp-mysql</strong> role.</p>
+          <p>Now we'll edit our <strong>phpapp-mysql</strong> role and override the default attribute with our value that is specific to our set up.</p>
 
           <pre class="terminal">$ <span class="cmd">knife role edit phpapp-mysql</span></pre>
 
