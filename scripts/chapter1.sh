@@ -92,6 +92,30 @@ knife cookbook site download xml
 tar zxf xml-*.tar.gz
 rm xml-*.tar.gz
 
+knife cookbook site download yum-epel
+tar zxf yum-epel-*.tar.gz
+rm yum-epel-*.tar.gz
+
+knife cookbook site download yum
+tar zxf yum-*.tar.gz
+rm yum-*.tar.gz
+
+knife cookbook site download windows
+tar zxf windows-*.tar.gz
+rm windows-*.tar.gz
+
+knife cookbook site download chef_handler
+tar zxf chef_handler-*.tar.gz
+rm chef_handler-*.tar.gz
+
+knife cookbook site download powershell
+tar zxf powershell-*.tar.gz
+rm powershell-*.tar.gz
+
+knife cookbook site download iis
+tar zxf iis-*.tar.gz
+rm iis-*.tar.gz
+
 cd phpapp
 
 echo "depends \"php\"" >> metadata.rb
