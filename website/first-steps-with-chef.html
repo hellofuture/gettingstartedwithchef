@@ -186,7 +186,7 @@ version          '0.1.0'
         <pre class="editor"><strong class="code2add">file_cache_path "/root/chef-solo"
 cookbook_path "/root/chef-repo/cookbooks"</strong></pre>
 
-        <p>Add the lines in green. This file configures chef-solo, telling it where to keep it's cache of files and where our cookbooks are. Save the file. Now create a file called web.json.</p>
+        <p>Add the lines in green. This file configures chef-solo, telling it where to keep its cache of files and where our cookbooks are. Save the file. Now create a file called web.json.</p>
 
         <pre class="editor"><strong class="code2add">{
   "run_list": [ "recipe[apt]", "recipe[phpapp]" ]
@@ -744,7 +744,7 @@ Chef Client finished, 6 resources updated</pre>
 
     <h3>Templates</h3>
 
-    <p>WordPress keeps it's configuration in a file called wp-config.php. We need to create that file and put database names and user access details inside it. Chef provides a resource called <a href="http://docs.opscode.com/resource_template.html" target="_blank">template</a> that can do just that.</p>
+    <p>WordPress keeps its configuration in a file called wp-config.php. We need to create that file and put database names and user access details inside it. Chef provides a resource called <a href="http://docs.opscode.com/resource_template.html" target="_blank">template</a> that can do just that.</p>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
