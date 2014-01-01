@@ -345,14 +345,39 @@ Cookbook saved: /root/chef-repo/cookbooks/php-1.1.8.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf php*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm php*.tar.gz</span></pre>
 
-        <p>The php cookbook also depends on the xml cookbook, so let's grab that one.</p>
+        <p>The php cookbook depends on the <strong>xml</strong>, <strong>yum-epel</strong>, <strong>windows</strong>, and <strong>iis</strong> cookbooks, so we'll need those even though we won't be using all of them. We'll also have to install sub-dependencies <strong>yum</strong> (a dependency of yum-epel), <strong>chef_handler</strong>, and <strong>powershell</strong> (dependencies of windows).</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download xml</span>
-Downloading xml from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/xml-1.1.2.tar.gz
+Downloading xml from the cookbooks site at version 1.2.0 to /root/chef-repo/cookbooks/xml-1.2.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/xml-1.2.0.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf xml-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">rm xml-*.tar.gz</span></pre>
-
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download yum-epel</span>
+Downloading yum-epel from the cookbooks site at version 0.2.0 to /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-epel-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download yum</span>
+Downloading yum from the cookbooks site at version 3.0.4 to /root/chef-repo/cookbooks/yum-3.0.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/yum-3.0.4.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download windows</span>
+Downloading windows from the cookbooks site at version 1.12.4 to /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf windows-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download chef_handler</span>
+Downloading chef_handler from the cookbooks site at version 1.1.4 to /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef_handler-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download powershell</span>
+Downloading powershell from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/powershell-1.1.2.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/powershell-1.1.2.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf powershell-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download iis</span>
+Downloading iis from the cookbooks site at version 1.6.6 to /root/chef-repo/cookbooks/iis-1.6.6.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/iis-1.6.6.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf iis-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm *.tar.gz</span>
+</pre>
+				
         <p>Let's use the php cookbook in our cookbook.</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
