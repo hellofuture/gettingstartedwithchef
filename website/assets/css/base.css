@@ -131,19 +131,6 @@ p {
   margin: 0;
 }
 
-#hellofutureinfo {
-  background-color: #f0f0f0;
-  font-size: small;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 20px;
-}
-
-#hellofutureinfo .container {
-}
-
-#hellofutureinfo .container p {
-  margin: 7px 0;
-}
 
 #gswc-chapter-switcher {
   float: right;
@@ -160,6 +147,42 @@ p {
   padding: 15px;
   border: solid 1px #ddd;
   border-top: none;
+}
+
+.bb-sponsor {
+  height: 28px;
+}
+
+.bb-sponsor a {
+  display: block;
+  width: 200px;
+  height: 28px;
+  position: relative;
+  top: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.bb-sponsor a span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #fff url(../img/sponsored_by_brightbox.png) 0 0 no-repeat;
+  display: block;
+  width: 200px;
+  height: 28px;
+}
+
+.bb-header {
+  margin-top: 20px;
+}
+
+.bb-header a {
+  float: right;
+}
+
+.bb-footer a {
+  margin: 0 auto;
 }
 
 /* Custom page CSS

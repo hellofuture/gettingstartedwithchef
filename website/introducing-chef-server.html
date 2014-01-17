@@ -9,7 +9,7 @@
 
     <!-- CSS -->
     <link href="assets/cerulean/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/base.css?v=2" rel="stylesheet">
+    <link href="assets/css/base.css?v=5" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -26,11 +26,10 @@
   <body>
 
     <div id="wrap">
-      <div id="hellofutureinfo">
-        <div class="container"><p>The authors of this online book <a href="http://hellofutu.re">Hello Future</a> offer cloud automation and Chef training and consultancy.<br/>Say <a href="mailto:hello@hellofutu.re">hello@hellofutu.re</a> for more information or <a href="https://twitter.com/hellofutur3">follow us on Twitter</a>.</p></div>
-      </div>
-
        <div class="container">
+          <div class="bb-sponsor bb-header">
+             <a href="http://brightbox.com/" rel="nofollow" target="_blank">Sponsored by Brightbox<span></span></a>
+          </div> 
           <div class="page-header">
             <ul id="gswc-chapter-switcher" class="nav nav-pills">
               <li class="active dropdown">
@@ -280,8 +279,79 @@ Updated Role phpapp!</pre>
 
         <p>Knife plugins extend its functionality and make knife even more useful! Amongst other things, knife plugins allow us to automatically create cloud instances before we bootstrap them. You can view the <a href="http://docs.opscode.com/plugin_knife.html" target="_blank">full list of official knife plugins over at docs.opscode.com</a>.</p>
 
+<h3>Brightbox</h3>
 
-        </p>
+        <p>Brightbox are a UK based cloud provider. You can <a href="https://manage.brightbox.com/signup" target="_blank">sign up with them here</a>.</p>
+
+        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-brightbox</span>
+...
+Successfully installed knife-brightbox-0.3.0</pre>
+
+        <p>Now we need to set some details in .chef/knife.rb (which is inside your Chef Repository). Open it up in your favourite text editor.</p>
+
+        <pre class="editor"><span class="code2add">knife[:brightbox_client_id] = "xxx-xxxxx"
+knife[:brightbox_secret] = "xxxxxxxxxxxxxxx"</span></pre>
+
+        <p>Add the code in green but enter your API client id and secret which you can obtain from your Brightbox account settings page.</p>
+
+        <p>Save the file.</p>
+
+        <p>We can test to see if that's worked using the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox flavor list</span>
+ID           Name             Handle           Architecture     RAM        Disk       Cores
+typ-4nssg    High IO Nano     nano.high-io     0-bit            512 MB     20 GB      2
+typ-c8awf    Standard Nano    nano             0-bit            512 MB     20 GB      1
+typ-b1gmb    Standard Mini    mini             0-bit            1024 MB    40 GB      2
+typ-iqisj    High IO Mini     mini.high-io     0-bit            1024 MB    40 GB      4
+typ-urtky    High IO Small    small.high-io    0-bit            2048 MB    80 GB      4
+typ-8fych    Standard Small   small            0-bit            2048 MB    80 GB      2
+typ-qdiwq    High IO Medium   medium.high-io   0-bit            4096 MB    160 GB     8
+typ-1j0zf    Standard Medium  medium           0-bit            4096 MB    160 GB     4
+typ-mlbt7    High IO Large    large.high-io    0-bit            8192 MB    320 GB     8
+typ-1e0xr    Standard Large   large            0-bit            8192 MB    320 GB     4
+typ-wdicw    High IO XL       xl.high-io       0-bit            16384 MB   640 GB     8
+typ-a4aqc    Standard XL      xl               0-bit            16384 MB   640 GB     4
+typ-lr76m    High IO XXL      xxl.high-io      0-bit            32768 MB   1280 GB    8
+typ-vs01b    Standard XXL     xxl              0-bit            32768 MB   1280 GB    4</pre>
+
+        <p>We can get a list of images (operating systems) with the following command.</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox image list</span>
+ID          Name                               Status    
+img-t3xyp   Blank Disk Image                   public    
+img-r726y   FreeBSD 9.0 minimal                public    
+img-hnigl   Windows 2008 Server R2             public    
+img-g8ia6   ubuntu-raring-13.04-amd64-server   public    
+img-u3ttt   ubuntu-raring-13.04-i386-server    public    
+img-6isnq   ubuntu-raring-daily-amd64-server   public    
+img-rttkx   ubuntu-raring-daily-i386-server    public    
+img-nhjvo   ubuntu-saucy-daily-amd64-server    public    
+img-q1ts8   ubuntu-saucy-daily-i386-server     public</pre>
+    
+        <p>So let's provision and bootstrap a cloud instance with Brightbox.</p>
+
+        <div class="alert alert-block"><strong>Heads up!</strong> Before you can bootstrap with Brightbox you need to enter your SSH public key in the dashboard.</div>
+
+        <p>We'll use the flavor "typ-c8awf" and the Ubuntu 13.04 image "img-g8ia6".</p>
+
+        <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp]" --distro chef-full</span></pre>
+
+        <p>After a while we'll see the following result.</p>
+
+        <pre class="terminal"><span class="code2remote">xxx.xxx.xx.xx</span> Chef Client finished, 73 resources updated
+<span class="code2remote">xxx.xxx.xx.xx</span> 
+
+<span class="code2remote">Instance ID</span>: srv-5ple0
+<span class="code2remote">Name</span>: 
+<span class="code2remote">Flavor</span>: typ-c8awf
+<span class="code2remote">Image</span>: ubuntu-raring-13.04-amd64-server
+<span class="code2remote">Public IP Address</span>: 109.107.35.66
+<span class="code2remote">Private IP Address</span>: 10.242.34.174
+<span class="code2remote">Environment</span>: _default
+<span class="code2remote">Run List</span>: role[phpapp]</pre>
+
+        <p>Visit the Public IP Address in your browser and you'll see the WordPress install page.</p>
 
         <h4>Rackspace Cloud</h4>
 
@@ -478,80 +548,6 @@ Do you really want to delete this server? (Y/N) y
           <dd>specifies a region other than the default.</dd>
         </dl>
 
-        <h3>Brightbox</h3>
-
-        <p>Brightbox are a UK based cloud provider. You can <a href="https://manage.brightbox.com/signup" target="_blank">sign up with them here</a>.</p>
-
-        <pre class="terminal">$ <span class="cmd">sudo /opt/chef/embedded/bin/gem install knife-brightbox</span>
-...
-Successfully installed knife-brightbox-0.3.0</pre>
-
-        <p>Now we need to set some details in .chef/knife.rb (which is inside your Chef Repository). Open it up in your favourite text editor.</p>
-
-        <pre class="editor"><span class="code2add">knife[:brightbox_client_id] = "xxx-xxxxx"
-knife[:brightbox_secret] = "xxxxxxxxxxxxxxx"</span></pre>
-
-        <p>Add the code in green but enter your API client id and secret which you can obtain from your Brightbox account settings page.</p>
-
-        <p>Save the file.</p>
-
-        <p>We can test to see if that's worked using the following command.</p>
-
-        <pre class="terminal">$ <span class="cmd">knife brightbox flavor list</span>
-ID           Name             Handle           Architecture     RAM        Disk       Cores
-typ-4nssg    High IO Nano     nano.high-io     0-bit            512 MB     20 GB      2
-typ-c8awf    Standard Nano    nano             0-bit            512 MB     20 GB      1
-typ-b1gmb    Standard Mini    mini             0-bit            1024 MB    40 GB      2
-typ-iqisj    High IO Mini     mini.high-io     0-bit            1024 MB    40 GB      4
-typ-urtky    High IO Small    small.high-io    0-bit            2048 MB    80 GB      4
-typ-8fych    Standard Small   small            0-bit            2048 MB    80 GB      2
-typ-qdiwq    High IO Medium   medium.high-io   0-bit            4096 MB    160 GB     8
-typ-1j0zf    Standard Medium  medium           0-bit            4096 MB    160 GB     4
-typ-mlbt7    High IO Large    large.high-io    0-bit            8192 MB    320 GB     8
-typ-1e0xr    Standard Large   large            0-bit            8192 MB    320 GB     4
-typ-wdicw    High IO XL       xl.high-io       0-bit            16384 MB   640 GB     8
-typ-a4aqc    Standard XL      xl               0-bit            16384 MB   640 GB     4
-typ-lr76m    High IO XXL      xxl.high-io      0-bit            32768 MB   1280 GB    8
-typ-vs01b    Standard XXL     xxl              0-bit            32768 MB   1280 GB    4</pre>
-
-        <p>We can get a list of images (operating systems) with the following command.</p>
-
-        <pre class="terminal">$ <span class="cmd">knife brightbox image list</span>
-ID          Name                               Status    
-img-t3xyp   Blank Disk Image                   public    
-img-r726y   FreeBSD 9.0 minimal                public    
-img-hnigl   Windows 2008 Server R2             public    
-img-g8ia6   ubuntu-raring-13.04-amd64-server   public    
-img-u3ttt   ubuntu-raring-13.04-i386-server    public    
-img-6isnq   ubuntu-raring-daily-amd64-server   public    
-img-rttkx   ubuntu-raring-daily-i386-server    public    
-img-nhjvo   ubuntu-saucy-daily-amd64-server    public    
-img-q1ts8   ubuntu-saucy-daily-i386-server     public</pre>
-    
-        <p>So let's provision and bootstrap a cloud instance with Brightbox.</p>
-
-        <div class="alert alert-block"><strong>Heads up!</strong> Before you can bootstrap with Brightbox you need to enter your SSH public key in the dashboard.</div>
-
-        <p>We'll use the flavor "typ-c8awf" and the Ubuntu 13.04 image "img-g8ia6".</p>
-
-        <pre class="terminal">$ <span class="cmd">knife brightbox server create --flavor typ-c8awf --image img-g8ia6 --run-list "role[phpapp]" --distro chef-full</span></pre>
-
-        <p>After a while we'll see the following result.</p>
-
-        <pre class="terminal"><span class="code2remote">xxx.xxx.xx.xx</span> Chef Client finished, 73 resources updated
-<span class="code2remote">xxx.xxx.xx.xx</span> 
-
-<span class="code2remote">Instance ID</span>: srv-5ple0
-<span class="code2remote">Name</span>: 
-<span class="code2remote">Flavor</span>: typ-c8awf
-<span class="code2remote">Image</span>: ubuntu-raring-13.04-amd64-server
-<span class="code2remote">Public IP Address</span>: 109.107.35.66
-<span class="code2remote">Private IP Address</span>: 10.242.34.174
-<span class="code2remote">Environment</span>: _default
-<span class="code2remote">Run List</span>: role[phpapp]</pre>
-
-        <p>Visit the Public IP Address in your browser and you'll see the WordPress install page.</p>
-
         <h3>Other cloud providers</h3>
 
         <p>If you're a cloud provider that would like to have instructions for your platform included with Getting started with Chef, please email <a href="mailto:support@gettingstartedwithchef.com" target="_blank">support@gettingstartedwithchef.com</a> and we'll make that happen.</p>
@@ -564,6 +560,10 @@ img-q1ts8   ubuntu-saucy-daily-i386-server     public</pre>
           <li class="previous"><a href="first-steps-with-chef.html">&larr; First steps with Chef</a></li>
           <li class="next"><a href="more-than-one-website.html">More than one website &rarr;</a></li>
         </ul>
+
+        <div class="bb-sponsor bb-footer">
+          <a href="http://brightbox.com/" rel="nofollow" target="_blank">Sponsored by Brightbox<span></span></a>
+        </div>
 
         </div>
         <div id="push"></div>

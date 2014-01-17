@@ -9,7 +9,7 @@
 
     <!-- CSS -->
     <link href="assets/cerulean/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/base.css?v=2" rel="stylesheet">
+    <link href="assets/css/base.css?v=5" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -28,12 +28,11 @@
  
     <!-- Part 1: Wrap all page content here -->
     <div id="wrap">
-      <div id="hellofutureinfo">
-        <div class="container"><p>The authors of this online book <a href="http://hellofutu.re">Hello Future</a> offer cloud automation and Chef training and consultancy.<br/>Say <a href="mailto:hello@hellofutu.re">hello@hellofutu.re</a> for more information or <a href="https://twitter.com/hellofutur3">follow us on Twitter</a>.</p></div>
-      </div>
       <!-- Begin page content -->
       <div class="container">
-       
+        <div class="bb-sponsor bb-header">
+          <a href="http://brightbox.com/" rel="nofollow" target="_blank">Sponsored by Brightbox<span></span></a>
+        </div>       
 
         <div class="page-header">
           <ul id="gswc-chapter-switcher" class="nav nav-pills">
@@ -67,7 +66,7 @@
 
         <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of Ubuntu. Don't just run Chef on your Ubuntu or Mac desktop, we need somewhere we can play around and re-image later.</p> 
 
-        <p>In order to get the most out of this book, you should sign up with a cloud server provider. <a href="http://aws.amazon.com/ec2/" target="_black">Amazon EC2</a> or <a href="http://www.rackspace.com/cloud/servers/" target="_blank">Rackspace</a> are supported throughout the guide. Alternatively, you can install Ubuntu in a virtual machine. If you do, create a snapshot once Ubuntu is installed so we can re-use the fresh installation later on.</p>
+        <p>In order to get the most out of this book, you should sign up with a cloud server provider. <a href="http://brightbox.com/" target="_blank">Brightbox</a>, <a href="http://aws.amazon.com/ec2/" target="_black">Amazon EC2</a> or <a href="http://www.rackspace.com/cloud/servers/" target="_blank">Rackspace</a> are supported throughout the guide. Alternatively, you can install Ubuntu in a virtual machine. If you do, create a snapshot once Ubuntu is installed so we can re-use the fresh installation later on.</p>
 
         <h3>Installing Chef</h3>
 
@@ -351,14 +350,14 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">rm php*.tar.gz</span></pre>
 Downloading xml from the cookbooks site at version 1.2.0 to /root/chef-repo/cookbooks/xml-1.2.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xml-1.2.0.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf xml-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download yum-epel</span>
-Downloading yum-epel from the cookbooks site at version 0.2.0 to /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
-root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-epel-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download yum</span>
 Downloading yum from the cookbooks site at version 3.0.4 to /root/chef-repo/cookbooks/yum-3.0.4.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/yum-3.0.4.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download yum-epel</span>
+Downloading yum-epel from the cookbooks site at version 0.2.0 to /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-epel-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download windows</span>
 Downloading windows from the cookbooks site at version 1.12.4 to /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
@@ -1037,7 +1036,12 @@ Chef Client finished, 57 resources updated</pre>
       <li class="next"><a href="introducing-chef-server.html">Introducing Chef Server &rarr;</a></li>
     </ul>
 
+        <div class="bb-sponsor bb-footer">
+          <a href="http://brightbox.com/" rel="nofollow" target="_blank">Sponsored by Brightbox<span></span></a>
+        </div>
+
     </div>
+
 
     </div>
 
