@@ -48,7 +48,7 @@
             </li>
           </ul>
           <h1>Getting started with Chef</h1>
-          <div>By Andy Gale</div>
+          <div>By <a href="http://andy-gale.com" target="_blank">Andy Gale</a></div>
         </div>
 
         <ul class="pager">
@@ -172,7 +172,11 @@ version          '0.1.0'
 # All rights reserved - Do Not Redistribute
 #
 
-<strong class="code2add">include_recipe "apache2"</strong>
+<strong class="code2add">include_recipe "apache2"
+
+apache_site "default" do
+  enable true
+end</strong>
 </pre>
         <p>Again add the line in green. This includes the default recipe from the apache2 cookbook in our recipe. The default apache2 recipe (which can be found in cookbooks/apache2/recipes/default.rb) installs and configures Apache for us.</p>
 
@@ -253,7 +257,10 @@ depends "apache2"
 include_recipe "apache2"
 <strong class="code2add">include_recipe "mysql::client"
 include_recipe "mysql::server"</strong>
-</pre>
+
+apache_site "default" do
+  enable true
+end</pre>
         
         <p>Add the two lines in green and save the file. Now let's run chef-solo again!</p>
 
@@ -411,11 +418,11 @@ include_recipe "mysql::client"
 include_recipe "mysql::server"
 <span class="code2add">include_recipe "php"
 include_recipe "php::module_mysql"
-include_recipe "apache2::mod_php5"
+include_recipe "apache2::mod_php5"</span>
 
 apache_site "default" do
   enable true
-end</span></pre>
+end</pre>
 
         <p>Add the code in green. Here we add the PHP default recipe, one to install the PHP MySQL extension and one to enable the Apache PHP module mod_php. We also enable the default site so we can check our installation has worked. Save the file and we're good to run chef-solo again to install all of those things.</p>
 
