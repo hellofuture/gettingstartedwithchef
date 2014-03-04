@@ -134,16 +134,31 @@ root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">ls</span>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks/phpapp# <span class="cmd">cd ..</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download apache2</span>
-Downloading apache2 from the cookbooks site at version 1.6.0 to /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/apache2-1.6.0.tar.gz
+Downloading apache2 from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/apache2-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/apache2-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf apache2*</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm apache2*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download apt</span>
-Downloading apt from the cookbooks site at version 1.9.0 to /root/chef-repo/cookbooks/apt-1.9.0.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/apt-1.9.0.tar.gz
+Downloading apt from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/apt-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/apt-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf apt*</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">rm apt*.tar.gz</span></pre
->
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm apt*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download iptables</span>
+Downloading iptables from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/iptables-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/iptables-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf iptables*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm iptables*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download logrotate</span>
+Downloading logrotate from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/logrotate-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/logrotate-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf logrotate*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm logrotate*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download pacman</span>
+Downloading pacman from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/pacman-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/logrotate-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf pacman*</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm pacman*.tar.gz</span></pre>
+
         <p>Let's go back into our cookbook.</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
@@ -307,16 +322,31 @@ suggests "windows"</pre>
     
         <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download openssl</span>
-Downloading openssl from the cookbooks site at version 1.0.0 to /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/openssl-1.0.0.tar.gz
+Downloading openssl from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/openssl-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/openssl-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf openssl*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm openssl*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download build-essential</span>
-Downloading build-essential from the cookbooks site at version 1.3.4 to /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/build-essential-1.3.4.tar.gz
+Downloading build-essential from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/build-essential-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/build-essential-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf build-essential-*.tar.gz></span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm build-essential-*.tar.gz</span></pre>
-        
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download homebrew</span>
+Downloading homebrew from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/homebrew-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/homebrew-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf homebrew-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm homebrew-*.tar.gz</span></pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download windows</span>
+Downloading windows from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/windows-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/windows-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf windows-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm windows-*.tar.gz</span></pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download chef_handler</span>
+Downloading chef_handler from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/chef_handler-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/chef_handler-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef_handler-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef_handler-*.tar.gz</span></pre>
+
         <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
     
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd ..</span>
@@ -365,14 +395,6 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download
 Downloading yum-epel from the cookbooks site at version 0.2.0 to /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/yum-epel-0.2.0.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf yum-epel-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download windows</span>
-Downloading windows from the cookbooks site at version 1.12.4 to /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/windows-1.12.4.tar.gz
-root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf windows-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download chef_handler</span>
-Downloading chef_handler from the cookbooks site at version 1.1.4 to /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/chef_handler-1.1.4.tar.gz
-root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef_handler-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download powershell</span>
 Downloading powershell from the cookbooks site at version 1.1.2 to /root/chef-repo/cookbooks/powershell-1.1.2.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/powershell-1.1.2.tar.gz
@@ -754,19 +776,35 @@ Chef Client finished, 6 resources updated</pre>
 
     <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks/phpapp</span></pre>
 
-    <p>WordPress requires some random salt strings for security. It would not be wise for us to specify a default in our cookbook so instead of specifying them in web.json, we can use a service provided by WordPress to generate a file containing them.</p>
+    <p>WordPress wp-config.php files should have some random salt strings inside them for security. We can use a service provided by WordPress to generate a file containing them.</p>
 
     <p>Open recipes/default.rb and add the code in green to the end.</p>
 
     <pre class="editor"><span class="code2add">wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
 
-remote_file wp_secrets do
-  source 'https://api.wordpress.org/secret-key/1.1/salt/'
-  action :create_if_missing
-  mode 0644
+if File.exist?(wp_secrets)
+  salt_data = File.read(wp_secrets)
+else
+  require 'open-uri'
+  salt_data = open('https://api.wordpress.org/secret-key/1.1/salt/').read
+  open(wp_secrets, 'wb') do |file|
+    file &lt;&lt; salt_data
+  end
+end
+
+template node['phpapp']['path'] + '/wp-config.php' do
+  source 'wp-config.php.erb'
+  mode 0755
+  owner 'root'
+  group 'root' 
+  variables(
+    :database        => node['phpapp']['database'],
+    :user            => node['phpapp']['db_username'],
+    :password        => node['phpapp']['db_password'],
+    :wp_secrets      => salt_data)
 end</span></pre>
 
-    <p>That will create the file wp-secrets.php from the URL <a href="https://api.wordpress.org/secret-key/1.1/salt/" target="_blank">https://api.wordpress.org/secret-key/1.1/salt/</a> which we can include in our template. The <strong>action :create_if_missing</strong> ensures this only happens once.</p>
+    <p>That will fetch us some unique salt strings once. Ideal for our purposes.</p>
 
     <p>Save the file.</p>
 
@@ -796,35 +834,6 @@ require_once(ABSPATH . 'wp-settings.php');
 ?&gt;</span></pre>
 
     <p>Variables that should be inserted into the template are done so with <strong>&lt;%= @database %&gt;</strong>. You can also include attributes inside templates using <strong>&lt;%= node['phpapp']['database'] %&gt;</strong> although that can prevent your template from being easily reused elsewhere so is not considered best practice.</p>
-
-    <p>Save the file.</p>
-
-    <p>Open recipes/default.rb and add the code in green to the end.</p>
-
-    <pre class="editor"><span class="code2add">salt_data = ''
-
-ruby_block 'fetch-salt-data' do
-  block do
-    salt_data = File.read(wp_secrets)
-  end
-  action :create
-end
-
-template node['phpapp']['path'] + '/wp-config.php' do
-  source 'wp-config.php.erb'
-  mode 0755
-  owner 'root'
-  group 'root' 
-  variables(
-    :database        => node['phpapp']['database'],
-    :user            => node['phpapp']['db_username'],
-    :password        => node['phpapp']['db_password'],
-    :wp_secrets      => salt_data)
-end</span></pre>
-
-    <p>In order to include the random strings from the file we generated earlier, we've introduced another resource here called <a href="http://docs.opscode.com/resource_ruby_block.html" target="_black">ruby_block</a>. It ensures our Ruby code executes at the same time as the rest of the resources in our recipe. Without it, Chef would execute the Ruby code that reads wp-secrets.php before the wp-secrets.php file is created.</p>
-
-    <p>We use the <strong>variables</strong> attribute of the <strong>template</strong> resource to specify which attribute each variable in our template should correspond to. While not entirely necessary this extra bit of code does decouple our template from our recipe.</p>
 
     <p>Save the file.</p>
 
@@ -928,19 +937,14 @@ end
 
 wp_secrets = Chef::Config[:file_cache_path] + '/wp-secrets.php'
 
-remote_file wp_secrets do
-  source 'https://api.wordpress.org/secret-key/1.1/salt/'
-  action :create_if_missing
-  mode 0644
-end
-
-salt_data = ''
-
-ruby_block 'fetch-salt-data' do
-  block do
-    salt_data = File.read(wp_secrets)
+if File.exist?(wp_secrets)
+  salt_data = File.read(wp_secrets)
+else
+  require 'open-uri'
+  salt_data = open('https://api.wordpress.org/secret-key/1.1/salt/').read
+  open(wp_secrets, 'wb') do |file|
+    file &lt;&lt; salt_data
   end
-  action :create
 end
 
 template node['phpapp']['path'] + '/wp-config.php' do
