@@ -193,7 +193,7 @@ apache_site "default" do
   enable true
 end</strong>
 </pre>
-        <p>Again add the line in green. This includes the default recipe from the apache2 cookbook in our recipe. The default apache2 recipe (which can be found in cookbooks/apache2/recipes/default.rb) installs and configures Apache for us.</p>
+        <p>Again add the lines in green. This includes the default recipe from the apache2 cookbook in our recipe. The default apache2 recipe (which can be found in cookbooks/apache2/recipes/default.rb) installs and configures Apache for us.</p>
 
         <p>Okay. Let's see if what we've got so far works! Go back to the chef-repo directory.</p>
 
@@ -329,7 +329,7 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">rm openssl*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download build-essential</span>
 Downloading build-essential from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/build-essential-x.x.x.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/build-essential-x.x.x.tar.gz
-root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf build-essential-*.tar.gz></span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf build-essential-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm build-essential-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download homebrew</span>
 Downloading homebrew from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/homebrew-x.x.x.tar.gz
