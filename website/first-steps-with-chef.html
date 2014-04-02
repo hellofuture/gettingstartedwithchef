@@ -228,11 +228,13 @@ Chef Client finished, 14 resources updated</pre>
         <p>Next we'll setup MySQL. As the community site has a <a href="http://community.opscode.com/cookbooks/mysql" target="_blank">cookbook for MySQL</a>, the process is similar to Apache. Again we'll ask knife to fetch the cookbook from the community site for us.</p>
 
         <pre class="terminal">root@intro:~/chef-repo# <span class="cmd">cd cookbooks</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql</span>
-Downloading mysql from the cookbooks site at version 2.1.2 to /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/mysql-2.1.2.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql 4.1.2</span>
+Downloading mysql from the cookbooks site at version 4.1.2 to /root/chef-repo/cookbooks/mysql-4.1.2.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/mysql-4.1.2.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf mysql*</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm mysql-*.tar.gz</span></pre>
+
+        <p>You may notice that we've specified <strong>4.1.2</strong> after the cookbook name. That's because we want to use that version rather than the latest version as version 5 introduces some great changes but will break our recipe.</p> 
 
         <p>So let's install MySQL then. We want to install both the MySQL client and the server as we'll be running our application on a single instance for now. Look inside the MySQL cookbook and see exactly what we need to include in our recipe.</p>
     
@@ -255,10 +257,10 @@ long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          '0.1.0'
 
 depends "apache2"
-<strong class="code2add">depends "mysql"</strong>
+<strong class="code2add">depends "mysql", "4.1.2"</strong>
 </pre>
 
-        <p>Add the line in green and save the file. Now edit recipes/default.rb.</p>
+        <p>Add the line in green and save the file. You'll notice we include a specific version for the mysql cookbook here as well. Now edit recipes/default.rb.</p>
 
         <pre class="editor">#
 # Cookbook Name:: phpapp
