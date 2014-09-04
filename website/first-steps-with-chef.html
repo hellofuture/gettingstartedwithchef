@@ -347,7 +347,17 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download
 Downloading chef_handler from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/chef_handler-x.x.x.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/chef_handler-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef_handler-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef_handler-*.tar.gz</span></pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef_handler-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download chef-sugar</span>
+Downloading chef_handler from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/chef-sugar-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/chef-sugar-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef-sugar-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef-sugar-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql-chef_gem</span>
+Downloading chef_handler from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/mysql-chef_gem-x.x.x.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/mysql-chef_gem-x.x.x.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf v-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm mysql-chef_gem-*.tar.gz</span></pre>
 
         <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
     
