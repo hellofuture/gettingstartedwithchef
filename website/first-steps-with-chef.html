@@ -64,7 +64,7 @@
 
         <p>Every time you do this you have to setup a web server, remember lots of installation commands, edit configuration files, fetch a copy of WordPress and do lots of setup. Generally you always forget one step and it is an unnecessary distraction from what you should be doing. Wouldn't it be nice if this was all entirely automated? With Chef we can define our infrastructure as code and automate tasks just like this.</p>
 
-        <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of Ubuntu. Don't just run Chef on your Ubuntu or Mac desktop, we need somewhere we can play around and re-image later.</p> 
+        <p>So before we start, we need somewhere test our code. We'll introduce you to tools that help you manage your Chef development and testing later in the book but for now we'll just need root access to a fresh install of <strong>Ubuntu 12.04</strong>. Don't just run Chef on your Ubuntu or Mac desktop, we need somewhere we can play around and re-image later.</p> 
 
         <p>In order to get the most out of this book, you should sign up with a cloud server provider. <a href="http://brightbox.com/" target="_blank">Brightbox</a>, <a href="http://aws.amazon.com/ec2/" target="_black">Amazon EC2</a> or <a href="http://www.rackspace.com/cloud/servers/" target="_blank">Rackspace</a> are supported throughout the guide. Alternatively, you can install Ubuntu in a virtual machine. If you do, create a snapshot once Ubuntu is installed so we can re-use the fresh installation later on.</p>
 
@@ -99,7 +99,7 @@ Chef: 11.4.0
 
         <pre class="terminal">root@intro:~# <span class="cmd">wget http://github.com/opscode/chef-repo/tarball/master</span>
 root@intro:~# <span class="cmd">tar -zxf master</span>
-root@intro:~# <span class="cmd">mv opscode-chef-repo* chef-repo</span>
+root@intro:~# <span class="cmd">mv chef-chef-repo* chef-repo</span>
 root@intro:~# <span class="cmd">rm master</span></pre>
       
         <p>If we look inside the chef-repo directory we can see the following:</p>
@@ -352,12 +352,7 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download
 Downloading chef-sugar from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/chef-sugar-x.x.x.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/chef-sugar-x.x.x.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf chef-sugar-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef-sugar-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql-chef_gem</span>
-Downloading mysql-chef_gem from the cookbooks site at version x.x.x to /root/chef-repo/cookbooks/mysql-chef_gem-x.x.x.tar.gz
-Cookbook saved: /root/chef-repo/cookbooks/mysql-chef_gem-x.x.x.tar.gz
-root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf v-*.tar.gz</span>
-root@intro:~/chef-repo/cookbooks# <span class="cmd">rm mysql-chef_gem-*.tar.gz</span></pre>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">rm chef-sugar-*.tar.gz</span></pre>
 
         <p>And now we've fulfilled those dependencies let's try and re-run chef-solo!</p>
     
@@ -488,7 +483,7 @@ Chef Client finished, 8 resources updated</pre>
 
         <p>Now if you were setting up a server by hand, this is where you'd manually setup a database, copy the web application code over, create a MySQL user for the website and configure virtual hosts. Instead, we'll use Chef to automate the setup of our application. This allows us to set up multiple servers and know we will always get the same results.</p>
 
-        <p>Before we setup our database we need to fetch a final few cookbooks. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
+        <p>Before we setup our database we need to fetch a final few cookbooks. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>mariadb</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download database</span>
 Downloading database from the cookbooks site at version 1.3.12 to /root/chef-repo/cookbooks/database-1.3.12.tar.gz
@@ -502,12 +497,19 @@ root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download
 Downloading xfs from the cookbooks site at version 1.1.0 to /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/xfs-1.1.0.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf xfs-*.tar.gz</span>
+root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mariadb</span>
+Downloading mariadb from the cookbooks site at version 1.1.0 to /root/chef-repo/cookbooks/mariadb-1.1.0.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/mariadb-1.1.0.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar mariadb xfs-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download aws</span>
 Downloading aws from the cookbooks site at version 0.100.6 to /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
 Cookbook saved: /root/chef-repo/cookbooks/aws-0.100.6.tar.gz
 root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf aws-*.tar.gz</span>
+@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download mysql2_chef_gem 0.1.0</span>
+Downloading aws from the cookbooks site at version 0.1.1 to /root/chef-repo/cookbooks/mysql2_chef_gem-0.1.1.tar.gz
+Cookbook saved: /root/chef-repo/cookbooks/mysql2_chef_gem-0.1.1.tar.gz
+root@intro:~/chef-repo/cookbooks# <span class="cmd">tar zxf mysql2_chef_gem-*.tar.gz</span>
 root@intro:~/chef-repo/cookbooks# <span class="cmd">rm *.tar.gz</span></pre>
-
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">cd phpapp</span></pre>
 
         <p>We'll now add the new dependencies to our cookbook. Open metadata.rb.</p>
@@ -523,7 +525,8 @@ version          '0.1.0'
 depends "apache2"
 depends "mysql"
 depends "php"
-<span class="code2add">depends "database"</span></pre>
+<span class="code2add">depends "database"
+depends "mysql2_chef_gem"</span></pre>
 
         <p>Add the code in green and save the file. It's now time to write our first Chef recipe. To setup our web application we need to:</p>
 
@@ -556,7 +559,8 @@ include_recipe "mysql::server"
 include_recipe "php"
 include_recipe "php::module_mysql"
 include_recipe "apache2::mod_php5"
-<span class="code2add">include_recipe "mysql::ruby"</span>
+<span class="code2add">include_recipe "mysql::ruby"
+include_recipe "mysql2_chef_gem"</span>
 
 apache_site "default" do
   enable true
@@ -568,6 +572,8 @@ end
 end</span></pre>
     
         <p>Add the code in green but hang on a minute. We've hard-coded the name of the database name to be &quot;phpapp&quot;. That could prevent our recipe from being reusable. Really the database name should be an attribute. Let's change our code so that's the case.</p>
+
+        <p>We've also included the resource <strong>mysql2_chef_gem</strong> which installs a Ruby library (called a &quot;gem&quot;) that allows Chef to interact with a MySQL server.</p>
 
         <pre class="editor">mysql_database <span class="code2add">node['phpapp']['database']</span> do
   connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
@@ -595,18 +601,18 @@ Relevant File Content:
 ----------------------
 /root/chef-repo/cookbooks/phpapp/recipes/default.rb:
 
- 10:  include_recipe "apache2"
- 11:  include_recipe "mysql::client"
- 12:  include_recipe "mysql::server"
- 13:  include_recipe "php"
- 14:  include_recipe "php::module_mysql"
- 15:  include_recipe "apache2::mod_php5"
- 16:  
- <span class="code2highlight">17>> mysql_database node['phpapp']['database'] do</span>
- 18:    connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
- 19:    action :create
- 20:  end
- 21:</pre>
+ 16:  include_recipe "mysql::ruby"
+ 17:  include_recipe "mysql2_chef_gem"
+ 18:  
+ 19:  apache_site "default" do
+ 20:    enable true
+ 21:  end
+ 22:  
+ <span class="code2highlight">23>> mysql_database node['phpapp']['database'] do</span>
+ 24:    connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
+ 25:    action :create
+ 26:  end
+ 27:</pre>
 
         <p>The message <strong>undefined method `[]' for nil:NilClass</strong> is Ruby telling us that the attribute <strong>node['phpapp']['database']</strong> doesn't exist. We need to define it.</p>
 
@@ -650,6 +656,7 @@ include_recipe "php"
 include_recipe "php::module_mysql"
 include_recipe "apache2::mod_php5"
 include_recipe "mysql::ruby"
+include_recipe "mysql2_chef_gem"
 
 apache_site "default" do
   enable true
@@ -908,6 +915,7 @@ include_recipe "php"
 include_recipe "php::module_mysql"
 include_recipe "apache2::mod_php5"
 include_recipe "mysql::ruby"
+include_recipe "mysql2_chef_gem"
 
 apache_site "default" do
   enable <span class="code2change">false</span>
