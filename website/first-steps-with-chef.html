@@ -573,7 +573,7 @@ end</span></pre>
     
         <p>Add the code in green but hang on a minute. We've hard-coded the name of the database name to be &quot;phpapp&quot;. That could prevent our recipe from being reusable. Really the database name should be an attribute. Let's change our code so that's the case.</p>
 
-        <p>We've also included the resource <strong>mysql2_chef_gem</strong> which installs a Ruby library (called a &quot;gem&quot;) that allows Chef to interact with a MySQL server.</p>
+        <p>We've also included the <strong>mysql2_chef_gem</strong> recipe which installs a Ruby library (called a &quot;gem&quot;) that allows Chef to interact with a MySQL server.</p>
 
         <pre class="editor">mysql_database <span class="code2add">node['phpapp']['database']</span> do
   connection ({:host => 'localhost', :username => 'root', :password => node['mysql']['server_root_password']})
