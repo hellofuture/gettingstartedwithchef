@@ -483,7 +483,7 @@ Chef Client finished, 8 resources updated</pre>
 
         <p>Now if you were setting up a server by hand, this is where you'd manually setup a database, copy the web application code over, create a MySQL user for the website and configure virtual hosts. Instead, we'll use Chef to automate the setup of our application. This allows us to set up multiple servers and know we will always get the same results.</p>
 
-        <p>Before we setup our database we need to fetch a final few cookbooks. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>mariadb</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them.</p>
+        <p>Before we setup our database we need to fetch a final few cookbooks. The <strong>database</strong> cookbook provides resources that allow us to easily manage databases and database users. The database cookbook depends on the <strong>postgresql</strong>, <strong>mariadb</strong>, <strong>xfs</strong> and <strong>aws</strong> cookbooks so we'll need those as well even though we won't be using them. We'll also fetch the <strong>mysql2_chef_gem</strong> cookbook which the <strong>database</strong> cookbook requires when used with MySQL.</p>
 
         <pre class="terminal">root@intro:~/chef-repo/cookbooks# <span class="cmd">knife cookbook site download database</span>
 Downloading database from the cookbooks site at version 1.3.12 to /root/chef-repo/cookbooks/database-1.3.12.tar.gz
